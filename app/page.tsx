@@ -1,11 +1,6 @@
-import React from "react";
-import { Button } from "./components/ui/Button";
-const page = () => {
-  return (
-    <div>
-      <Button>Click Me</Button>
-    </div>
-  );
-};
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
-export default page;
+export default function Home() {
+  return <Button>Click me</Button>;
+}
