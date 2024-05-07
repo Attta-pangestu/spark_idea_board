@@ -8,6 +8,7 @@ import { OrganizationSwitcher } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Star } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { OrgSwicther } from "./OrgSwitcher";
 
 const font = Poppins({ subsets: ["latin"], weight: ["600", "700"] });
 
@@ -24,27 +25,7 @@ const OrgSideBar = () => {
           </span>
         </div>
       </Link>
-      <OrganizationSwitcher
-        hidePersonal
-        appearance={{
-          elements: {
-            rootBox: {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-            },
-            organizationSwitcherTrigger: {
-              padding: "6px",
-              width: "100%",
-              borderRadius: "8px",
-              border: "1px solid #E5E7EB",
-              justifyContent: "space-between",
-              backgroundColor: "white",
-            },
-          },
-        }}
-      />
+      <OrgSwicther />
       <div className="space-y-1 w-full">
         <Button
           variant={favorites ? "ghost" : "secondary"}
