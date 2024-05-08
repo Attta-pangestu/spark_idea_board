@@ -1,7 +1,34 @@
+"use client";
+import { CreateOrganization, useOrganization } from "@clerk/nextjs";
 import React from "react";
+import { BoardList } from "./_components/board/BoardList";
+import { EmptyNotif } from "./_components/board/EmptyNotif";
 
-const DashboardPage = () => {
-  return <div>Dashboard root page</div>;
+interface DashboardProps {
+  searchParams: {
+    search?: string;
+    favorites?: string;
+  };
+}
+
+const DashboardPage = ({ searchParams }: DashboardProps) => {
+  const { organization } = useOrganization();
+
+  return (
+    <div className="p-6 w-full h-[calc(100%-80px)]   ">
+      {searchParams && JSON.stringify(searchParams)}
+      {/* <EmptyNotif
+        imageUrl="/elements.svg"
+        title="Welcome to Spark Board"
+        description="Create a board to get started"
+        buttonText="Create Board"
+        buttonContent={<CreateOrganization />}
+      /> */}
+      <BoardList boardId={"1"} query={searchParams} />
+      {/* <BoardList boardId={"1"} query={searchParams}  /> */}
+      {/* {organization ? <BoardList /> : <EmptyOrg />} */}
+    </div>
+  );
 };
 
 export default DashboardPage;
