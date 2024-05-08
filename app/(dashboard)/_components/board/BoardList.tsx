@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 import { useOrganization } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { useAPIMutation } from "@/hooks/useMutation";
-import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface BoardListProps {
   boardId: string;
@@ -28,10 +28,13 @@ export const BoardList = ({ boardId, query }: BoardListProps) => {
       title: "Untitled",
     })
       .then((id) => {
-        //do anything with id
+        //do anything with board id
       })
       .catch((err) => {
         throw err;
+      })
+      .finally(() => {
+        toast.success("Board created");
       });
   };
 
