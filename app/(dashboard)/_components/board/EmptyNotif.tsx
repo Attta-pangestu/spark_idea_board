@@ -10,6 +10,7 @@ interface EmptyOrg {
   buttonText?: string;
   buttonContent?: React.ReactNode;
   buttonClickHandler?: () => void;
+  payload?: any;
 }
 
 export const EmptyNotif = ({
@@ -19,6 +20,7 @@ export const EmptyNotif = ({
   buttonText,
   buttonContent,
   buttonClickHandler,
+  payload,
 }: EmptyOrg) => {
   return (
     <div className="w-full h-full flex flex-col justify-center items-center whitespace-nowrap space-y-4">
@@ -26,8 +28,14 @@ export const EmptyNotif = ({
       <h2 className="text-2xl font-semibold mt-6">{title}</h2>
       <p className="text-muted-foreground text-sm ">{description}</p>
       {buttonClickHandler && (
-        <Button variant="default" size="lg" onClick={buttonClickHandler}>
-          <Plus className="h-4 w-4 mr-2" /> {buttonText}
+        <Button
+          disabled={payload?.disabled ?? false}
+          variant="default"
+          size="lg"
+          onClick={buttonClickHandler}
+        >
+          <Plus className="h-4 w-4 mr-2" />{" "}
+          {payload.disabled ? "Loading..." : buttonText}
         </Button>
       )}
       {buttonText && buttonContent && (

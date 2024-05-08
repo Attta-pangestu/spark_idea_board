@@ -1,7 +1,11 @@
+"use client";
+
 import { EmptyNotif } from "./EmptyNotif";
 import { useMutation } from "convex/react";
 import { useOrganization } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
+import { useAPIMutation } from "@/hooks/useMutation";
+import { useEffect } from "react";
 
 interface BoardListProps {
   boardId: string;
@@ -13,17 +17,22 @@ interface BoardListProps {
 
 export const BoardList = ({ boardId, query }: BoardListProps) => {
   const { organization } = useOrganization();
-  const createBoard = useMutation(api.board.createBoard);
+  const { mutating, isLoading } = useAPIMutation(api.board.createBoard);
 
   const data = [];
 
-  const clickCreateBoardHandler = () => {
+  const clickCreateBoardHandler = async () => {
     if (!organization) return;
-
-    createBoard({
+    mutating({
       orgId: organization.id,
       title: "Untitled",
-    });
+    })
+      .then((id) => {
+        //do anything with id
+      })
+      .catch((err) => {
+        throw err;
+      });
   };
 
   if (!data.length && query.search) {
@@ -54,6 +63,7 @@ export const BoardList = ({ boardId, query }: BoardListProps) => {
         description="Create a board to get started"
         buttonText="Create Board"
         buttonClickHandler={clickCreateBoardHandler}
+        payload={{ disabled: isLoading }}
       />
     );
   }

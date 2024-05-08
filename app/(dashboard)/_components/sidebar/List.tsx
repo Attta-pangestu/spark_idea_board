@@ -11,9 +11,6 @@ export const List = () => {
   });
 
   if (!userMemberships?.data?.length) return null;
-
-  console.log(userMemberships.data);
-
   return (
     <ul className="space-y-4">
       {userMemberships.data?.map((membership) => (
