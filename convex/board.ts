@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
+import { query } from "./_generated/server";
 
 const images = [
   "/placeholders/1.svg",
@@ -28,7 +29,6 @@ export const createBoard = mutation({
 
     const randomImage = images[Math.floor(Math.random() * images.length)];
 
-
     const board = await ctx.db.insert("boards", {
       title: args.title,
       orgId: args.orgId,
@@ -37,5 +37,21 @@ export const createBoard = mutation({
       imageUrl: randomImage,
     });
     return board;
+  },
+});
+
+export const getBoardsByOrg = query({
+  args: { orgId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const boards = await ctx.db
+      .query("boards")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .order("desc")
+      .collect();
+
+    return boards;
   },
 });
