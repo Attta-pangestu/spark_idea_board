@@ -1,6 +1,10 @@
-import { HeartIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { HeartIcon, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import { OverlayBoard } from "./OverlayBoard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BoardCard {
   board: {
@@ -16,25 +20,50 @@ interface BoardCard {
 }
 
 export const BoardCard = ({ board }: BoardCard) => {
+  const creationDate = new Date(board._creationTime as number);
+  const distanceDate = formatDistanceToNow(creationDate, { addSuffix: true });
+
   return (
-    <Link href={`/dashboard/board/${board._id}`}>
-      <div className="aspect-[100/127] border rounded-lg flex flex-col justify-between overflow-hidden">
-        <div className="relative flex">
+    <Link href={`/dashboard/board/${board._id}`} className="group">
+      <div className="relative aspect-[100/120] border rounded-lg flex flex-col justify-between overflow-hidden cursor-default">
+        <OverlayBoard />
+        {/* card image */}
+        <div className=" flex-1 bg-amber-50">
           <Image
-            className="rounded-full mr-4"
+            className="object-fit"
             src={board.imageUrl!}
             alt="author avatar"
-            width={40}
-            height={40}
+            fill
           />
-          <div className="flex flex-col">
-            <p className="text-sm font-semibold">{board.authorName}</p>
-            <small className="text-muted-foreground">
-              {board._creationTime.toString()}
-            </small>
-          </div>
         </div>
       </div>
+      {/* card info footer */}
+      <div className="bg-white p-3">
+        <p className="text-md truncate max-w-[calc(100%-20px)]">
+          {board.title}
+        </p>
+        <p className="mt-3 opacity-0 group-hover:opacity-100 text-md text-muted-foreground truncate">
+          {board.authorName} | {distanceDate}
+        </p>
+        <button
+          disabled={!board.isFavorite}
+          className={cn(
+            "opacity-0 group-hover:opacity-100 absolute bottom-8 right-3 text-muted-foreground hover:text-red-500"
+          )}
+        >
+          <Star
+            className={cn("h-8 w-8", board.isFavorite && " fill-red-500")}
+          />
+        </button>
+      </div>
     </Link>
+  );
+};
+
+BoardCard.Skeleton = function BoardCardSkeleton() {
+  return (
+    <div className=" aspect-[100/120]  rounded-lg  cursor-default bg-black">
+      <Skeleton className="w-full h-full" />
+    </div>
   );
 };

@@ -7,6 +7,7 @@ import { useAPIMutation } from "@/hooks/useMutation";
 import { toast } from "sonner";
 import { useQuery } from "convex/react";
 import { BoardCard } from "./BoardCard";
+import { NewBoard } from "./NewBoard";
 
 interface BoardListProps {
   boardId: string;
@@ -43,6 +44,16 @@ export const BoardList = ({ query }: BoardListProps) => {
   if (data === undefined) {
     return (
       <div>
+        <h2 className="text-3xl">
+          {query.favorites ? "Favorites Boards" : "Search Results Boards"}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 pb-10">
+          <NewBoard orgId={organization?.id as string} />
+          <BoardCard.Skeleton />
+          <BoardCard.Skeleton />
+          <BoardCard.Skeleton />
+          <BoardCard.Skeleton />
+        </div>
         <p>Loading...</p>
       </div>
     );
@@ -54,7 +65,8 @@ export const BoardList = ({ query }: BoardListProps) => {
         <h2 className="text-3xl">
           {query.favorites ? "Favorites Boards" : "Search Results Boards"}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-8 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 pb-10">
+          <NewBoard orgId={organization?.id as string} />
           {data.map((board) => (
             <BoardCard
               key={board._id}
