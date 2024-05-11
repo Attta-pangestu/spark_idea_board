@@ -6,6 +6,9 @@ import { formatDistanceToNow } from "date-fns";
 import { OverlayBoard } from "./OverlayBoard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownAction } from "./DropdownAction";
+import { useAPIMutation } from "@/hooks/useMutation";
+import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
 
 interface BoardCard {
   board: {
@@ -30,7 +33,18 @@ const BoardImage = ({ image }: { image: string }) => {
 
 export const BoardCard = ({ board }: BoardCard) => {
   const creationDate = new Date(board._creationTime as number);
+  const { mutating } = useAPIMutation(api.board.addFavorite);
   const distanceDate = formatDistanceToNow(creationDate, { addSuffix: true });
+
+  const handleFavorite = async () => {
+    mutating({ id: board._id, orgId: board.orgId, userId: board.authorId })
+      .then(() => {
+        toast.success("Board added to favorites");
+      })
+      .catch((err) => {
+        toast.error(err);
+      });
+  };
 
   return (
     <Link href={`/dashboard/board/${board._id}`} className="group">
@@ -50,7 +64,11 @@ export const BoardCard = ({ board }: BoardCard) => {
           {board.authorName} | {distanceDate}
         </p>
         <button
-          disabled={!board.isFavorite}
+          // disabled={!board.isFavorite}
+          onClick={(e) => {
+            e.preventDefault();
+            handleFavorite();
+          }}
           className={cn(
             "opacity-0 group-hover:opacity-100 absolute bottom-8 right-3 text-muted-foreground hover:text-red-500"
           )}
