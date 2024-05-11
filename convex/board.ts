@@ -55,3 +55,12 @@ export const getBoardsByOrg = query({
     return boards;
   },
 });
+
+export const deleteBoardById = mutation({
+  args: { id: v.id("boards") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+    const board = await ctx.db.delete(args.id);
+  },
+});

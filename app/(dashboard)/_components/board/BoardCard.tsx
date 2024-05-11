@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
-import { HeartIcon, Star } from "lucide-react";
+import { HeartIcon, MoreHorizontal, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { OverlayBoard } from "./OverlayBoard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DropdownAction } from "./DropdownAction";
 
 interface BoardCard {
   board: {
@@ -19,6 +20,14 @@ interface BoardCard {
   };
 }
 
+const BoardImage = ({ image }: { image: string }) => {
+  return (
+    <div className=" flex-1 bg-amber-50">
+      <Image className="object-fit" src={image} alt="author avatar" fill />
+    </div>
+  );
+};
+
 export const BoardCard = ({ board }: BoardCard) => {
   const creationDate = new Date(board._creationTime as number);
   const distanceDate = formatDistanceToNow(creationDate, { addSuffix: true });
@@ -27,18 +36,13 @@ export const BoardCard = ({ board }: BoardCard) => {
     <Link href={`/dashboard/board/${board._id}`} className="group">
       <div className="relative aspect-[100/120] border rounded-lg flex flex-col justify-between overflow-hidden cursor-default">
         <OverlayBoard />
-        {/* card image */}
-        <div className=" flex-1 bg-amber-50">
-          <Image
-            className="object-fit"
-            src={board.imageUrl!}
-            alt="author avatar"
-            fill
-          />
-        </div>
+        <BoardImage image={board.imageUrl!} />
+        <DropdownAction id={board._id} title={board.title}>
+          <MoreHorizontal className="absolute top-2 right-4 h-6 w-6 text-foreground opacity-100 group-hover:text-white  transition-opacity" />
+        </DropdownAction>
       </div>
       {/* card info footer */}
-      <div className="bg-white p-3">
+      <div className="bg-white p-3 relative">
         <p className="text-md truncate max-w-[calc(100%-20px)]">
           {board.title}
         </p>
