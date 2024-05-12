@@ -19,7 +19,7 @@ const DashboardPage = ({ searchParams }: DashboardProps) => {
       {searchParams && JSON.stringify(searchParams)}
 
       {organization ? (
-        <BoardList boardId={"1"} query={searchParams} />
+        <BoardList  query={searchParams} />
       ) : (
         <EmptyNotif
           imageUrl="/elements.svg"

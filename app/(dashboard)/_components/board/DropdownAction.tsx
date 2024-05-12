@@ -25,6 +25,7 @@ export const DropdownAction = ({
 }: DropdownActionProps) => {
   const { onOpen } = useRename();
   const { mutating, isLoading } = useAPIMutation(api.board.deleteBoardById);
+
   const copyLinkHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     navigator.clipboard

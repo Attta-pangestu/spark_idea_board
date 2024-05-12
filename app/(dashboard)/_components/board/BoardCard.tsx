@@ -10,17 +10,15 @@ import { useAPIMutation } from "@/hooks/useMutation";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 
-interface BoardCard {
-  board: {
-    _id: string;
-    title: string;
-    imageUrl: string | null;
-    authorId: string;
-    authorName: string;
-    _creationTime: Number;
-    orgId: string;
-    isFavorite?: boolean;
-  };
+export interface IBoardCard {
+  _id: string;
+  title: string;
+  imageUrl: string | null;
+  authorId: string;
+  authorName: string;
+  _creationTime: Number;
+  orgId: string;
+  isFavorite?: boolean;
 }
 
 const BoardImage = ({ image }: { image: string }) => {
@@ -31,15 +29,37 @@ const BoardImage = ({ image }: { image: string }) => {
   );
 };
 
-export const BoardCard = ({ board }: BoardCard) => {
+export const BoardCard = ({ board }: { board: IBoardCard }) => {
   const creationDate = new Date(board._creationTime as number);
-  const { mutating } = useAPIMutation(api.board.addFavorite);
+  const { mutating: addFavoriteMutate, isLoading: addFavoriteIsLoading } =
+    useAPIMutation(api.board.addFavorite);
+  const { mutating: removeFavoriteMutate, isLoading: removeFavoriteIsLoading } =
+    useAPIMutation(api.board.removeFavorite);
+
   const distanceDate = formatDistanceToNow(creationDate, { addSuffix: true });
 
   const handleFavorite = async () => {
-    mutating({ id: board._id, orgId: board.orgId, userId: board.authorId })
+    addFavoriteMutate({
+      id: board._id,
+      orgId: board.orgId,
+      userId: board.authorId,
+    })
       .then(() => {
         toast.success("Board added to favorites");
+      })
+      .catch((err) => {
+        toast.error(err);
+      });
+  };
+
+  const handleUnFavorite = async () => {
+    removeFavoriteMutate({
+      id: board._id,
+      orgId: board.orgId,
+      userId: board.authorId,
+    })
+      .then(() => {
+        toast.success("Board removed from favorites");
       })
       .catch((err) => {
         toast.error(err);
@@ -64,17 +84,20 @@ export const BoardCard = ({ board }: BoardCard) => {
           {board.authorName} | {distanceDate}
         </p>
         <button
-          // disabled={!board.isFavorite}
+          disabled={addFavoriteIsLoading || removeFavoriteIsLoading}
           onClick={(e) => {
             e.preventDefault();
-            handleFavorite();
+            board.isFavorite ? handleUnFavorite() : handleFavorite();
           }}
           className={cn(
-            "opacity-0 group-hover:opacity-100 absolute bottom-8 right-3 text-muted-foreground hover:text-red-500"
+            "opacity-0 group-hover:opacity-100 absolute bottom-8 right-3 text-muted-foreground hover:text-golden"
           )}
         >
           <Star
-            className={cn("h-8 w-8", board.isFavorite && " fill-red-500")}
+            className={cn(
+              "h-8 w-8",
+              board.isFavorite && " fill-golden-default text-golden-default"
+            )}
           />
         </button>
       </div>

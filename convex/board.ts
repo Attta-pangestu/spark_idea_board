@@ -106,5 +106,40 @@ export const addFavorite = mutation({
 
 export const removeFavorite = mutation({
   args: { id: v.id("boards"), orgId: v.string(), userId: v.string() },
-  handler: async (ctx, args) => {},
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+    const board = await ctx.db.get(args.id);
+    if (!board) throw new Error("Board not found");
+    const userId = identity.subject;
+
+    const favoriteToDelete = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_board_org", (q) =>
+        q.eq("userId", userId).eq("boardId", board._id).eq("orgId", args.orgId)
+      )
+      .unique();
+
+    if (!favoriteToDelete) throw new Error("Favorite not found");
+
+    await ctx.db.delete(favoriteToDelete._id);
+  },
+});
+
+export const getFavoritesByUserAndOrg = query({
+  args: { orgId: v.string(), userId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity || identity.subject !== args.userId)
+      throw new Error("Unauthorized : User Id does not match identity");
+
+    const favorites = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", args.userId).eq("orgId", args.orgId)
+      )
+      .collect();
+
+    return favorites;
+  },
 });
