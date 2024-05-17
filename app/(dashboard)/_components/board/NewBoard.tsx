@@ -4,12 +4,14 @@ import { OverlayBoard } from "./OverlayBoard";
 import { useAPIMutation } from "@/hooks/useMutation";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface NewBoardProps {
   orgId: string;
 }
 
 export const NewBoard = ({ orgId }: NewBoardProps) => {
+  const router = useRouter();
   const { mutating, isLoading } = useAPIMutation(api.board.createBoard);
   const handleCreateBoard = async () => {
     try {
@@ -21,6 +23,7 @@ export const NewBoard = ({ orgId }: NewBoardProps) => {
       throw err;
     } finally {
       toast.success("Board created");
+      router.push(`/board/${orgId}`);
     }
   };
 

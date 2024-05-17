@@ -19,7 +19,13 @@ const OrgSideBar = () => {
     <div className=" hidden lg:flex flex-col space-y-6 h-full w-[200px] pl-5 pt-5 ">
       <Link href="/">
         <div className="flex items-center gap-x-2">
-          <Image src="/logo.svg" alt="Logo" width={60} height={60} />
+          <Image
+            src="/logo.svg"
+            alt="Logo"
+            width={60}
+            height={60}
+            className="w-auto h-auto"
+          />
           <span className={cn(font.className, "text-l font-semibold")}>
             Spark Board
           </span>
@@ -47,7 +53,7 @@ const OrgSideBar = () => {
           <Link
             href={{
               pathname: "/",
-              query: { favorites: true },
+              query: { favorites: "true" },
             }}
           >
             <Star className="h-4 w-4 mr-2" /> Favorite Boards

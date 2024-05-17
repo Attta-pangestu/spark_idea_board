@@ -24,7 +24,14 @@ export const EmptyNotif = ({
 }: EmptyOrg) => {
   return (
     <div className="w-full h-full flex flex-col justify-center items-center whitespace-nowrap space-y-4">
-      <Image alt="Empty" src={imageUrl} width={200} height={200} />
+      <Image
+        alt="Empty"
+        src={imageUrl}
+        width={200}
+        height={200}
+        className="w-[200px] h-[200px]"
+        priority
+      />
       <h2 className="text-2xl font-semibold mt-6">{title}</h2>
       <p className="text-muted-foreground text-sm ">{description}</p>
       {buttonClickHandler && (

@@ -19,7 +19,7 @@ const Loading = () => {
         width={120}
         height={120}
         priority
-        className="animate-pulse duration-700"
+        className="animate-pulse duration-700 w-auto h-auto"
       />
     </div>
   );

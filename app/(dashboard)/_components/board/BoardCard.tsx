@@ -24,7 +24,14 @@ export interface IBoardCard {
 const BoardImage = ({ image }: { image: string }) => {
   return (
     <div className=" flex-1 bg-amber-50">
-      <Image className="object-fit" src={image} alt="author avatar" fill />
+      <Image
+        className="object-fill w-full h-full"
+        src={image}
+        alt="author avatar"
+        width={120}
+        height={120}
+        priority
+      />
     </div>
   );
 };
@@ -75,8 +82,14 @@ export const BoardCard = ({ board }: { board: IBoardCard }) => {
           <MoreHorizontal className="absolute top-2 right-4 h-6 w-6 text-foreground opacity-100 group-hover:text-white  transition-opacity" />
         </DropdownAction>
       </div>
-      {/* card info footer */}
-      <div className="bg-white p-3 relative">
+      {/* card footer */}
+      <div
+        className="bg-white p-3 relative"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+      >
         <p className="text-md truncate max-w-[calc(100%-20px)]">
           {board.title}
         </p>

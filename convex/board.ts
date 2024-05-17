@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { query } from "./_generated/server";
+import { getAllOrThrow } from "convex-helpers/server/relationships";
 
 const images = [
   "/placeholders/1.svg",
@@ -41,17 +42,93 @@ export const createBoard = mutation({
 });
 
 export const getBoardsByOrg = query({
-  args: { orgId: v.string() },
+  args: {
+    orgId: v.string(),
+    search: v.optional(v.string()),
+    favorites: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
-    const boards = await ctx.db
+    let boards;
+
+    const noFilterBoards = await ctx.db
       .query("boards")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .order("desc")
       .collect();
 
+    const favoriteId = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", identity.subject).eq("orgId", args.orgId)
+      )
+      .order("desc")
+      .collect()
+      .then((fav) => fav.map((fav) => fav.boardId));
+
+    if (favoriteId && args.favorites === "true") {
+      const favBoard = noFilterBoards
+        .filter((board) => favoriteId.includes(board._id))
+        .map((board) => ({
+          ...board,
+          isFavorite: true,
+        }));
+      return favBoard;
+    } else if (args.search) {
+      const searchedBoard = await ctx.db
+        .query("boards")
+        .withSearchIndex("search_title", (q) =>
+          q.search("title", args.search as string).eq("orgId", args.orgId)
+        )
+        .collect()
+        .then((boards) =>
+          boards.map((board) => ({
+            ...board,
+            isFavorite: favoriteId.includes(board._id),
+          }))
+        );
+      console.log("🚀 ~ handler: ~ searchedBoard:", searchedBoard);
+      return searchedBoard;
+    }
+    const defaultBoard = noFilterBoards.map((board) => ({
+      ...board,
+      isFavorite: favoriteId.includes(board._id),
+    }));
+    return defaultBoard;
+  },
+});
+
+export const getFavoriteBoards = query({
+  args: {
+    orgId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+    const favoritedBoards = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", identity.subject).eq("orgId", args.orgId)
+      )
+      .order("desc")
+      .collect();
+    const favBoardId = favoritedBoards.map((board) => board.boardId);
+    console.log("🚀 ~ handler: ~ filterBoardId:", favBoardId);
+    return favBoardId;
+  },
+});
+
+export const getAllBoards = query({
+  args: {
+    orgId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const boards = await ctx.db
+      .query("boards")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
     return boards;
   },
 });
@@ -62,6 +139,17 @@ export const deleteBoardById = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
     const board = await ctx.db.delete(args.id);
+    const userId = identity.subject;
+
+    // check favorited board also deleted
+    const favoriteToDelete = await ctx.db
+      .query("userFavorites")
+      .withIndex("by_user_board", (q) =>
+        q.eq("userId", userId).eq("boardId", args.id)
+      )
+      .unique();
+
+    if (favoriteToDelete) await ctx.db.delete(favoriteToDelete._id);
   },
 });
 

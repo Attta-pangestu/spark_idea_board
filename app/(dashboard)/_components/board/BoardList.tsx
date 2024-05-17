@@ -9,6 +9,7 @@ import { useQuery } from "convex/react";
 import { BoardCard, IBoardCard } from "./BoardCard";
 import { NewBoard } from "./NewBoard";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface BoardListProps {
   query: {
@@ -18,24 +19,15 @@ interface BoardListProps {
 }
 
 export const BoardList = ({ query }: BoardListProps) => {
+  const router = useRouter();
   const { organization } = useOrganization();
-  const { user } = useUser();
   const { mutating, isLoading } = useAPIMutation(api.board.createBoard);
-  const boardDatas: IBoardCard[] =
+  const boardDatas: any =
     useQuery(api.board.getBoardsByOrg, {
       orgId: organization?.id as string,
+      favorites: query?.favorites || "false",
+      search: query.search,
     }) || [];
-  const favoriteBoards = useQuery(api.board.getFavoritesByUserAndOrg, {
-    orgId: organization?.id as string,
-    userId: user?.id as string,
-  });
-
-  const favoriteSet = new Set(favoriteBoards?.map((fav) => fav.boardId));
-
-  const boardsWithFavorites = boardDatas?.map((board: IBoardCard) => ({
-    ...board,
-    isFavorite: favoriteSet.has(board._id as string),
-  }));
 
   const clickCreateBoardHandler = async () => {
     if (!organization) return;
@@ -44,7 +36,8 @@ export const BoardList = ({ query }: BoardListProps) => {
       title: "Untitled",
     })
       .then((id) => {
-        //do anything with board id
+        toast.success("Successfully created new board");
+        router.push(`/board/${id}`);
       })
       .catch((err) => {
         throw err;
@@ -80,7 +73,7 @@ export const BoardList = ({ query }: BoardListProps) => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8 pb-10">
           <NewBoard orgId={organization?.id as string} />
-          {boardsWithFavorites.map((board: IBoardCard) => (
+          {boardDatas.map((board: IBoardCard) => (
             <BoardCard key={board._id} board={board} />
           ))}
         </div>
