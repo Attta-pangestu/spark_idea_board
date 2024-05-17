@@ -74,7 +74,7 @@ export const BoardCard = ({ board }: { board: IBoardCard }) => {
   };
 
   return (
-    <Link href={`/dashboard/board/${board._id}`} className="group">
+    <Link href={`/board/${board._id}`} className="group">
       <div className="relative aspect-[100/120] border rounded-lg flex flex-col justify-between overflow-hidden cursor-default">
         <OverlayBoard />
         <BoardImage image={board.imageUrl!} />

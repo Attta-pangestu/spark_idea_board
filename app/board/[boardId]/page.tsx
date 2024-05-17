@@ -1,4 +1,6 @@
+import { Room } from "@/components/room/LiveBlocksRooms";
 import { Canvas } from "./_components/Canvas";
+import { LoadingCanvas } from "./_components/Loading";
 
 interface IBoardPage {
   params: {
@@ -7,7 +9,11 @@ interface IBoardPage {
 }
 
 const BoardPage = ({ params }: IBoardPage) => {
-  return <Canvas boardId={params.boardId} />;
+  return (
+    <Room roomId={params.boardId} fallback={<LoadingCanvas />}>
+      <Canvas boardId={params.boardId} />
+    </Room>
+  );
 };
 
 export default BoardPage;
