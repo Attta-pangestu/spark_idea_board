@@ -231,3 +231,11 @@ export const getFavoritesByUserAndOrg = query({
     return favorites;
   },
 });
+
+export const getBoardById = query({
+  args: { id: v.id("boards") },
+  handler: async (ctx, args) => {
+    const board = ctx.db.get(args.id);
+    return board;
+  },
+});

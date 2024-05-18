@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { BoardInfo } from "./BoardInfo";
 import { Participants } from "./Participants";
 import { Toolbar } from "./Toolbar";
