@@ -11,7 +11,6 @@ const liveblocks = new Liveblocks({
 });
 
 export async function POST(request: Request) {
-  // Get the current user from your database
   const authorization = await auth();
   const user = await currentUser();
 
@@ -27,7 +26,6 @@ export async function POST(request: Request) {
     return new Response("Unauthorized", { status: 403 });
   }
 
-  // Start an auth session inside your endpoint
   const userInfoSession = {
     name: user.firstName || "Anonymous",
     picture: user.imageUrl,
@@ -44,3 +42,5 @@ export async function POST(request: Request) {
 
   return new Response(body, { status });
 }
+
+
