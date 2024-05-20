@@ -60,7 +60,7 @@ export const BoardInfo = ({ boardId }: IBoardInfo) => {
       <Hint label="Edit Title" side="bottom" sideOffset={10}>
         <Button
           variant="board"
-          className="font-bold px-2"
+          className="font-bold px-2 underline underline-offset-1"
           onClick={() => onOpen(data._id, data.title)}
         >
           {data.title}
