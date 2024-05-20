@@ -1,5 +1,15 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToolButton } from "./ToolButton";
+import {
+  Circle,
+  Pencil,
+  Redo2,
+  Square,
+  StickyNote,
+  Type,
+  Undo2,
+} from "lucide-react";
 
 export const Toolbar = () => {
   const ToolWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -13,16 +23,17 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="absolute top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4">
+    <div className="absolute top-[50%] -translate-y-[50%] left-4 flex flex-col gap-y-2 bg-slate-100  p-3 shadow-md">
       <ToolWrapper>
-        <div>pencil</div>
-        <div>square</div>
-        <div>Circle</div>
-        <div>Ellipsis</div>
+        <ToolButton label="Pen" Icon={Pencil} onClick={() => {}} />
+        <ToolButton label="Text" Icon={Type} onClick={() => {}} />
+        <ToolButton label="Rectangle" Icon={Square} onClick={() => {}} />
+        <ToolButton label="Circle" Icon={Circle} onClick={() => {}} />
+        <ToolButton label="Note" Icon={StickyNote} onClick={() => {}} />
       </ToolWrapper>
       <ToolWrapper>
-        <div>Undo</div>
-        <div>Redo</div>
+        <ToolButton label="Undo" Icon={Undo2} onClick={() => {}} />
+        <ToolButton label="Redo" Icon={Redo2} onClick={() => {}} />
       </ToolWrapper>
     </div>
   );
