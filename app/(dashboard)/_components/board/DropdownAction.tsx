@@ -49,7 +49,7 @@ export const DropdownAction = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-30 z-[99] bg-white shadow-md rounded-md border border-white/10 "
+        className="w-30 z-[99] flex flex-col justify-center bg-black text-white shadow-md rounded-md border border-black/10 "
         sideOffset={5}
         side="bottom"
         onClick={(e) => {

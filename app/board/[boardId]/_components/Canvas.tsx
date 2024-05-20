@@ -10,13 +10,11 @@ interface ICanvas {
   boardId: string;
 }
 
-
-
 export const Canvas = ({ boardId }: ICanvas) => {
-  const info = useSelf((me : any) => me.info);
+  const info = useSelf((me: any) => me.info);
   return (
     <main className="h-full w-full relative bg-neutral-100 touch-none ">
-      <BoardInfo />
+      <BoardInfo boardId={boardId} />
       <Participants />
       <Toolbar />
     </main>

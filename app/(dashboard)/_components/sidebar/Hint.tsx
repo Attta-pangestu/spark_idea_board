@@ -13,6 +13,7 @@ interface HintProps {
   side?: "left" | "right" | "top" | "bottom";
   sideOffset?: number;
   alignOffset?: number;
+  className?: string;
 }
 
 export const Hint = ({
@@ -22,6 +23,7 @@ export const Hint = ({
   align,
   sideOffset,
   alignOffset,
+  className,
 }: HintProps) => {
   return (
     <TooltipProvider>
@@ -32,6 +34,7 @@ export const Hint = ({
           align={align}
           sideOffset={sideOffset}
           alignOffset={alignOffset}
+          className={`bg-black rounded-md text-white ${className}`}
         >
           <p>{label}</p>
         </TooltipContent>
