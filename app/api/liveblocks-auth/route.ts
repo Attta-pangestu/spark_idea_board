@@ -22,9 +22,9 @@ export async function POST(request: Request) {
     id: room,
   });
 
-  if (board?.orgId !== authorization.orgId) {
-    return new Response("Unauthorized", { status: 403 });
-  }
+  // if (board?.orgId !== authorization.orgId) {
+  //   return new Response("Unauthorized", { status: 403 });
+  // }
 
   const userInfoSession = {
     name: user.firstName || "Anonymous",
@@ -42,5 +42,3 @@ export async function POST(request: Request) {
 
   return new Response(body, { status });
 }
-
-

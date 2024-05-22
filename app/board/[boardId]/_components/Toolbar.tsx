@@ -116,8 +116,13 @@ export const Toolbar = ({
         <ToolButton
           label="Pen"
           Icon={Pencil}
-          onClick={() => setCanvasState({ mode: ICanvasMode.Pencil })}
-          isActive={canvasState.mode === ICanvasMode.Pencil}
+          onClick={() =>
+            setCanvasState({ mode: ICanvasMode.Pencil, LayerType: ILayer.Path })
+          }
+          isActive={
+            canvasState.mode === ICanvasMode.Pencil &&
+            canvasState.LayerType === ILayer.Path
+          }
         />
       </ToolWrapper>
       <ToolWrapper>

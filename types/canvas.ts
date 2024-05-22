@@ -9,6 +9,11 @@ export type IPosition = {
   y: number;
 };
 
+export type ICamera = {
+  x: number;
+  y: number;
+};
+
 export enum ILayer {
   Rectangle,
   Circle,
@@ -112,6 +117,7 @@ export type ICanvasState =
     }
   | {
       mode: ICanvasMode.Pencil;
+      LayerType: ILayer.Path;
     }
   | {
       mode: ICanvasMode.Pressing;

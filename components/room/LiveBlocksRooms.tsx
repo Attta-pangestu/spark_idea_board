@@ -12,7 +12,7 @@ interface IRoom {
 
 export function Room({ children, roomId, fallback }: IRoom) {
   return (
-    <RoomProvider id={roomId} initialPresence={{}}>
+    <RoomProvider id={roomId} initialPresence={{ cursor: null }}>
       <ClientSideSuspense fallback={fallback}>
         {() => children}
       </ClientSideSuspense>

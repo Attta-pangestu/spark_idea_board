@@ -20,7 +20,7 @@ export const Participants = () => {
     <div className="absolute  gap-3 top-3 right-4 bg-slate-100 rounded-md p-4 flex items-centers shadow-md">
       <div className=" flex gap-x-2 items-center">
         <span className="font-bold ">Participants: </span>
-        {combinedUsers.slice(0, MAX_SHOWN_USERS).map((user, index) => {
+        {combinedUsers.map((user, index) => {
           const { connectionId, info }: { connectionId: number; info: any } =
             user;
           return (
