@@ -25,7 +25,7 @@ import {
 import { MousePresenceOtherUsers } from "./MousePresenceOtherUser";
 import { deltaPointEventToCamera } from "@/lib/utils";
 import { nanoid } from "nanoid";
-import { Elsie_Swash_Caps } from "next/font/google";
+import { LayerPreview } from "./LayerPreview";
 
 interface ICanvas {
   boardId: string;
@@ -42,6 +42,10 @@ export const Canvas = ({ boardId }: ICanvas) => {
     g: 0,
     b: 0,
   });
+
+  const layerIds = useStorage((root) => root.layerIds);
+
+  // ===================================== HOOKS =================
 
   const history = useHistory();
   const canUndo = useCanUndo();
@@ -137,6 +141,14 @@ export const Canvas = ({ boardId }: ICanvas) => {
         onPointerLeave={onPointerLeave}
       >
         <g transform={`translate(${camera.x} ${camera.y})`}>
+          {layerIds.map((layerId) => (
+            <LayerPreview
+              key={layerId}
+              id={layerId}
+              onPressedDown={(e ) => {}}
+              selectionColor={"#000"}
+            />
+          ))}
           <MousePresenceOtherUsers />
         </g>
       </svg>
