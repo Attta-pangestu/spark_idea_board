@@ -11,7 +11,7 @@ import {
   Type,
   Undo2,
 } from "lucide-react";
-import { ICanvasMode, ICanvasState, ILayer } from "@/types/canvas";
+import { ICanvasMode, ICanvasState, ILayerEnum } from "@/types/canvas";
 
 interface IToolbar {
   canvasState: ICanvasState;
@@ -61,12 +61,12 @@ export const Toolbar = ({
           onClick={() =>
             setCanvasState({
               mode: ICanvasMode.Inserting,
-              LayerType: ILayer.Text,
+              LayerType: ILayerEnum.Text,
             })
           }
           isActive={
             canvasState.mode === ICanvasMode.Inserting &&
-            canvasState.LayerType === ILayer.Text
+            canvasState.LayerType === ILayerEnum.Text
           }
         />
         <ToolButton
@@ -75,12 +75,12 @@ export const Toolbar = ({
           onClick={() =>
             setCanvasState({
               mode: ICanvasMode.Inserting,
-              LayerType: ILayer.Note,
+              LayerType: ILayerEnum.Note,
             })
           }
           isActive={
             canvasState.mode === ICanvasMode.Inserting &&
-            canvasState.LayerType === ILayer.Note
+            canvasState.LayerType === ILayerEnum.Note
           }
         />
         <ToolButton
@@ -89,12 +89,12 @@ export const Toolbar = ({
           onClick={() =>
             setCanvasState({
               mode: ICanvasMode.Inserting,
-              LayerType: ILayer.Rectangle,
+              LayerType: ILayerEnum.Rectangle,
             })
           }
           isActive={
             canvasState.mode === ICanvasMode.Inserting &&
-            canvasState.LayerType === ILayer.Rectangle
+            canvasState.LayerType === ILayerEnum.Rectangle
           }
         />
 
@@ -104,12 +104,12 @@ export const Toolbar = ({
           onClick={() =>
             setCanvasState({
               mode: ICanvasMode.Inserting,
-              LayerType: ILayer.Circle,
+              LayerType: ILayerEnum.Circle,
             })
           }
           isActive={
             canvasState.mode === ICanvasMode.Inserting &&
-            canvasState.LayerType === ILayer.Circle
+            canvasState.LayerType === ILayerEnum.Circle
           }
         />
 
@@ -117,11 +117,14 @@ export const Toolbar = ({
           label="Pen"
           Icon={Pencil}
           onClick={() =>
-            setCanvasState({ mode: ICanvasMode.Pencil, LayerType: ILayer.Path })
+            setCanvasState({
+              mode: ICanvasMode.Pencil,
+              LayerType: ILayerEnum.Path,
+            })
           }
           isActive={
             canvasState.mode === ICanvasMode.Pencil &&
-            canvasState.LayerType === ILayer.Path
+            canvasState.LayerType === ILayerEnum.Path
           }
         />
       </ToolWrapper>

@@ -89,7 +89,6 @@ export const getBoardsByOrg = query({
             isFavorite: favoriteId.includes(board._id),
           }))
         );
-      console.log("🚀 ~ handler: ~ searchedBoard:", searchedBoard);
       return searchedBoard;
     }
     const defaultBoard = noFilterBoards.map((board) => ({
@@ -115,7 +114,6 @@ export const getFavoriteBoards = query({
       .order("desc")
       .collect();
     const favBoardId = favoritedBoards.map((board) => board.boardId);
-    console.log("🚀 ~ handler: ~ filterBoardId:", favBoardId);
     return favBoardId;
   },
 });

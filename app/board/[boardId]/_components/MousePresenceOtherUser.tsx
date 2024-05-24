@@ -16,7 +16,6 @@ const Cursors = () => {
 };
 
 export const MousePresenceOtherUsers = memo(() => {
-  console.log("Calling MousePresenceOtherUsers");
   return (
     <>
       {/*TODO : Draft Pencil */}

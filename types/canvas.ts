@@ -14,16 +14,16 @@ export type ICamera = {
   y: number;
 };
 
-export enum ILayer {
+export enum ILayerEnum {
+  Text,
+  Note,
   Rectangle,
   Circle,
   Path,
-  Text,
-  Note,
 }
 
 export type IRectangleLayer = {
-  typeLayer: ILayer.Rectangle;
+  typeLayer: ILayerEnum.Rectangle;
   x: number;
   y: number;
   height: number;
@@ -33,7 +33,7 @@ export type IRectangleLayer = {
 };
 
 export type ICircleLayer = {
-  typeLayer: ILayer.Circle;
+  typeLayer: ILayerEnum.Circle;
   x: number;
   y: number;
   height: number;
@@ -43,7 +43,7 @@ export type ICircleLayer = {
 };
 
 export type IPathLayer = {
-  typeLayer: ILayer.Path;
+  typeLayer: ILayerEnum.Path;
   x: number;
   y: number;
   height: number;
@@ -53,8 +53,8 @@ export type IPathLayer = {
   value?: string;
 };
 
-export type TextLayer = {
-  typeLayer: ILayer.Text;
+export type ITextLayer = {
+  typeLayer: ILayerEnum.Text;
   x: number;
   y: number;
   height: number;
@@ -63,8 +63,8 @@ export type TextLayer = {
   value?: string;
 };
 
-export type NoteLayer = {
-  typeLayer: ILayer.Note;
+export type INoteLayer = {
+  typeLayer: ILayerEnum.Note;
   x: number;
   y: number;
   height: number;
@@ -109,15 +109,14 @@ export type ICanvasState =
   | {
       mode: ICanvasMode.Inserting;
       LayerType:
-        | ILayer.Circle
-        | ILayer.Rectangle
-        | ILayer.Path
-        | ILayer.Text
-        | ILayer.Note;
+        | ILayerEnum.Circle
+        | ILayerEnum.Rectangle
+        | ILayerEnum.Text
+        | ILayerEnum.Note;
     }
   | {
       mode: ICanvasMode.Pencil;
-      LayerType: ILayer.Path;
+      LayerType: ILayerEnum.Path;
     }
   | {
       mode: ICanvasMode.Pressing;
@@ -135,3 +134,10 @@ export type ICanvasState =
   | {
       mode: ICanvasMode.Resizing;
     };
+
+export type ILayerType =
+  | IRectangleLayer
+  | ICircleLayer
+  | IPathLayer
+  | ITextLayer
+  | INoteLayer;

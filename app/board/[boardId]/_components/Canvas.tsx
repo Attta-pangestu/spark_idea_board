@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveObject } from "@liveblocks/client";
 import { useCallback, useEffect, useState } from "react";
 import { BoardInfo } from "./BoardInfo";
 import { Participants } from "./Participants";
@@ -10,27 +11,74 @@ import {
   useHistory,
   useMutation,
   useSelf,
+  useStorage,
 } from "@/liveblocks.config";
-import { ICamera, ICanvasMode, ICanvasState } from "@/types/canvas";
+import {
+  ICamera,
+  ICanvasMode,
+  ICanvasState,
+  Icolor,
+  ILayerEnum,
+  ILayerType,
+  IPoints,
+} from "@/types/canvas";
 import { MousePresenceOtherUsers } from "./MousePresenceOtherUser";
 import { deltaPointEventToCamera } from "@/lib/utils";
+import { nanoid } from "nanoid";
+import { Elsie_Swash_Caps } from "next/font/google";
 
 interface ICanvas {
   boardId: string;
 }
 
 export const Canvas = ({ boardId }: ICanvas) => {
-  const info = useSelf((me: any) => me.info);
-
   const [canvasState, setCanvasState] = useState<ICanvasState>({
     mode: ICanvasMode.None,
   });
 
   const [camera, setCamera] = useState<ICamera>({ x: 0, y: 0 });
+  const [lastUsedColor, setLastUsedColor] = useState<Icolor>({
+    r: 0,
+    g: 0,
+    b: 0,
+  });
 
   const history = useHistory();
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
+
+  const insertingLayer = useMutation(
+    (
+      { storage, setMyPresence },
+      layerType:
+        | ILayerEnum.Rectangle
+        | ILayerEnum.Circle
+        | ILayerEnum.Text
+        | ILayerEnum.Note,
+      position: IPoints
+    ) => {
+      const liveLayers = storage.get("layers");
+      const liveLayerIds = storage.get("layerIds");
+      const layerId = nanoid();
+      const layer = new LiveObject({
+        typeLayer: layerType,
+        x: position.x,
+        y: position.y,
+        height: 100,
+        width: 100,
+        fill: lastUsedColor,
+      });
+
+      liveLayerIds.push(layerId);
+      liveLayers.set(layerId, layer);
+
+      setMyPresence({ selection: [layerId] }, { addToHistory: true });
+      setCanvasState({ mode: ICanvasMode.None });
+    },
+    [lastUsedColor]
+  );
+
+  // ===================================== HOOKS ================================
 
   const onWheelHandler = useCallback((e: React.WheelEvent) => {
     setCamera((camera) => ({
@@ -48,6 +96,27 @@ export const Canvas = ({ boardId }: ICanvas) => {
     []
   );
 
+  const onPointerLeave = useMutation(({ setMyPresence }) => {
+    setMyPresence({ cursor: null });
+  }, []);
+
+  const onPointerUp = useMutation(
+    ({}, e: React.PointerEvent) => {
+      const point = deltaPointEventToCamera(e, camera);
+
+      console.log({ point, mode: canvasState.mode });
+
+      if (canvasState.mode === ICanvasMode.Inserting) {
+        insertingLayer(canvasState.LayerType, point);
+      } else {
+        setCanvasState({ mode: ICanvasMode.None });
+      }
+
+      history.resume();
+    },
+    [camera, canvasState, history, insertingLayer]
+  );
+
   return (
     <main className="h-full w-full relative bg-neutral-100 touch-none ">
       <BoardInfo boardId={boardId} />
@@ -60,8 +129,14 @@ export const Canvas = ({ boardId }: ICanvas) => {
         undo={history.undo}
         redo={history.redo}
       />
-      <svg className="h-[100vh] w-[100vw]" onPointerMove={onPointerMove}>
-        <g>
+      <svg
+        className="h-[100vh] w-[100vw]"
+        onPointerMove={onPointerMove}
+        onWheel={onWheelHandler}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerLeave}
+      >
+        <g transform={`translate(${camera.x} ${camera.y})`}>
           <MousePresenceOtherUsers />
         </g>
       </svg>
