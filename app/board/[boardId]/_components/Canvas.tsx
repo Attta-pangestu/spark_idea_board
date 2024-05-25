@@ -108,8 +108,6 @@ export const Canvas = ({ boardId }: ICanvas) => {
     ({}, e: React.PointerEvent) => {
       const point = deltaPointEventToCamera(e, camera);
 
-      console.log({ point, mode: canvasState.mode });
-
       if (canvasState.mode === ICanvasMode.Inserting) {
         insertingLayer(canvasState.LayerType, point);
       } else {
@@ -145,7 +143,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
             <LayerPreview
               key={layerId}
               id={layerId}
-              onPressedDown={(e ) => {}}
+              onPressedDown={(e) => {}}
               selectionColor={"#000"}
             />
           ))}
