@@ -85,11 +85,11 @@ export type XYWH = {
   height: number;
 };
 
-export enum Side {
+export enum ISide {
   Top = 1,
   Bottom = 2,
-  Left = 4,
-  Right = 8,
+  Left = 3,
+  Right = 4,
 }
 
 export enum ICanvasMode {

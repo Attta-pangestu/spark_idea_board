@@ -27,7 +27,7 @@ import { MousePresenceOtherUsers } from "./MousePresenceOtherUser";
 import { connectionIdToColor, deltaPointEventToCamera } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { LayerPreview } from "./LayerPreview";
-import { userInfo } from "os";
+import { ResizeSelectionBox } from "./ResizeSelectionBox";
 
 interface ICanvas {
   boardId: string;
@@ -89,6 +89,10 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const liveLayers = storage.get("layers");
       const liveLayerIds = storage.get("layerIds");
       const layerId = nanoid();
+
+      setLastUsedColor(() => ({ r: 1, g: 32, b: 78 }));
+
+      console.log({ lastUsedColor });
       const layer = new LiveObject({
         typeLayer: layerType,
         x: position.x,
@@ -202,6 +206,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
             />
           ))}
           <MousePresenceOtherUsers />
+          <ResizeSelectionBox onResizePointerDownHandler={() => {}} />
         </g>
       </svg>
     </main>

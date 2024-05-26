@@ -1,4 +1,5 @@
 import { ILayerType, IRectangleLayer } from "@/types/canvas";
+import rgbHex from "rgb-hex";
 
 interface IRectangleShape {
   layerId: string;
@@ -14,7 +15,6 @@ export const RectangleShape = ({
   selectionColor,
 }: IRectangleShape) => {
   const { x, y, width, height, fill } = layerProps;
-  console.log(fill)
 
   return (
     <rect
@@ -25,7 +25,7 @@ export const RectangleShape = ({
       width={width}
       height={height}
       strokeWidth={selectionColor ? 3 : 1}
-      fill="#000"
+      fill={`#${rgbHex(fill.r, fill.g, fill.b)}`}
       stroke={selectionColor ?? "transparent"}
       onPointerDown={(e) => onPointerDown(e, layerId)}
     />
