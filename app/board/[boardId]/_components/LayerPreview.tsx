@@ -7,8 +7,9 @@ import { RectangleShape } from "./LayerType/Rectangle";
 
 interface ILayerPreview {
   id: string;
-  selectionColor: string;
+  selectionColor: string | undefined;
   onPressedDown: (e: React.PointerEvent, id: string) => void;
+  usedColor?: string;
 }
 
 export const LayerPreview = memo(
@@ -22,10 +23,12 @@ export const LayerPreview = memo(
         return (
           <RectangleShape
             key={id}
-            id={id}
+            layerId={id}
             layerProps={layer}
             onPointerDown={onPressedDown}
-            selectionColor={selectionColor}
+            selectionColor={
+              selectionColor === undefined ? "#000" : selectionColor
+            }
           />
         );
       default:
