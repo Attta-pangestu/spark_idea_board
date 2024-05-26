@@ -5,6 +5,8 @@ import { ILayerEnum, ILayerType, ISide, XYWH } from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
 
+const HANDLE_WIDTH = 10;
+
 interface ISelectionBoxMenu {
   onResizePointerDownHandler: (side: ISide, initialPosition: XYWH) => void;
 }
@@ -47,6 +49,56 @@ export const ResizeSelectionBox = memo(
             transform: `translate(${boxCoordinate.x}px, ${boxCoordinate.y}px) `,
           }}
         />
+        {/* Create action box to handle resize each corner */}
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nwse-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(ISide.Top, boxCoordinate);
+          }}
+        />
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nesw-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(ISide.Right, boxCoordinate);
+          }}
+        />
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nesw-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(ISide.Left, boxCoordinate);
+          }}
+        />
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nwse-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(ISide.Bottom, boxCoordinate);
+          }}
+        />
+
         <foreignObject
           x={boxCoordinate.x - 40}
           y={boxCoordinate.y - 50}
