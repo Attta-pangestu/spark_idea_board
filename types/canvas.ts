@@ -88,8 +88,8 @@ export type XYWH = {
 export enum ISide {
   Top = 1,
   Bottom = 2,
-  Left = 3,
-  Right = 4,
+  Left = 4,
+  Right = 8,
 }
 
 export enum ICanvasMode {
@@ -133,6 +133,8 @@ export type ICanvasState =
     }
   | {
       mode: ICanvasMode.Resizing;
+      initialBoxCoordinate: XYWH;
+      corner: ISide;
     };
 
 export type ILayerType =

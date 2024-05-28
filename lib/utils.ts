@@ -1,4 +1,4 @@
-import { ICamera, ILayerType, XYWH } from "@/types/canvas";
+import { ICamera, ILayerType, IPoints, ISide, XYWH } from "@/types/canvas";
 import { type ClassValue, clsx } from "clsx";
 import React from "react";
 import { twMerge } from "tailwind-merge";
@@ -56,4 +56,83 @@ export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
     width: right - left + padding * 2,
     height: bottom - top + padding * 2,
   };
+};
+
+export const resizeSelectedBox = (
+  boxCoordinate: XYWH,
+  corner: ISide,
+  cursorRelative: IPoints
+): XYWH => {
+  let results = {
+    x: boxCoordinate.x,
+    y: boxCoordinate.y,
+    width: boxCoordinate.width,
+    height: boxCoordinate.height,
+  };
+  // top right
+  if (corner === ISide.Right + ISide.Top) {
+    results.y = cursorRelative.y;
+    results.height = Math.abs(
+      boxCoordinate.y + boxCoordinate.height - results.y
+    );
+  }
+  // right bottom
+  if (corner === ISide.Right + ISide.Bottom) {
+    results.x = cursorRelative.x;
+    results.width = Math.abs(
+      boxCoordinate.width - cursorRelative.x + boxCoordinate.x
+    );
+  }
+
+  // bottom left
+  if (corner === ISide.Left + ISide.Bottom) {
+    results.y = cursorRelative.y;
+    results.height = Math.abs(cursorRelative.y - boxCoordinate.y);
+  }
+  // left top
+  if (corner === ISide.Left + ISide.Top) {
+    results.x = Math.min(
+      cursorRelative.x,
+      boxCoordinate.x + boxCoordinate.width
+    );
+    results.width = Math.abs(cursorRelative.x - boxCoordinate.x);
+  }
+
+  //corner
+  if (corner === (ISide.Top || ISide.Left)) {
+    results.x = cursorRelative.x;
+    results.width = Math.abs(
+      boxCoordinate.width + boxCoordinate.x - cursorRelative.x
+    );
+    results.y = cursorRelative.y;
+    results.height = Math.abs(
+      boxCoordinate.y + boxCoordinate.height - results.y
+    );
+  }
+
+  if (corner === (ISide.Right || ISide.Bottom)) {
+    results.x = cursorRelative.x;
+    results.width = Math.abs(
+      boxCoordinate.width + boxCoordinate.x - cursorRelative.x
+    );
+    results.y = cursorRelative.y;
+    results.height = Math.abs(
+      boxCoordinate.y + boxCoordinate.height - results.y
+    );
+  }
+
+  // else {
+  //   results.x = Math.min(
+  //     cursorRelative.x,
+  //     boxCoordinate.x + boxCoordinate.width
+  //   );
+  //   results.width = Math.abs(cursorRelative.x - boxCoordinate.x);
+  //   results.y = Math.min(
+  //     cursorRelative.y,
+  //     boxCoordinate.y + boxCoordinate.height
+  //   );
+  //   results.height = Math.abs(cursorRelative.y - boxCoordinate.y);
+  // }
+
+  return results;
 };

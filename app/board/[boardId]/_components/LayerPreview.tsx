@@ -2,14 +2,14 @@
 
 import { useStorage } from "@/liveblocks.config";
 import React, { memo } from "react";
-import { ILayerEnum, ILayerType } from "@/types/canvas";
+import { Icolor, ILayerEnum, ILayerType } from "@/types/canvas";
 import { RectangleShape } from "./LayerType/Rectangle";
 
 interface ILayerPreview {
   id: string;
   selectionColor: string | undefined;
   onPressedDown: (e: React.PointerEvent, id: string) => void;
-  usedColor?: string;
+  usedColor?: Icolor;
 }
 
 export const LayerPreview = memo(
@@ -26,13 +26,10 @@ export const LayerPreview = memo(
             layerId={id}
             layerProps={layer}
             onPointerDown={onPressedDown}
-            selectionColor={
-              selectionColor === undefined ? "#000" : selectionColor
-            }
+            selectionColor={selectionColor}
           />
         );
       default:
-        console.log("unknown layer type");
         return null;
     }
   }

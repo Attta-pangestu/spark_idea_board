@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import React, { memo } from "react";
 import { ILayerEnum, ILayerType, ISide, XYWH } from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
@@ -8,16 +8,22 @@ import { selectedBoxsCoordinate } from "@/lib/utils";
 const HANDLE_WIDTH = 10;
 
 interface ISelectionBoxMenu {
-  onResizePointerDownHandler: (side: ISide, initialPosition: XYWH) => void;
+  onResizePointerDownHandler: (
+    side: ISide,
+    initialPosition: XYWH,
+    e: React.PointerEvent
+  ) => void;
+  onResizePointerUpHandler?: (e: React.PointerEvent) => void;
 }
 
 export const ResizeSelectionBox = memo(
-  ({ onResizePointerDownHandler }: ISelectionBoxMenu) => {
+  ({
+    onResizePointerDownHandler,
+  }: ISelectionBoxMenu) => {
     // return selected layer id
     const selectedLayerIdBySelf: string[] = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection : []
     );
-    console.log("🚀 ~ selectedLayerIdBySelf:", selectedLayerIdBySelf);
 
     // getting selection coordinate
     const boxCoordinate: XYWH = useStorage((root) => {
@@ -34,7 +40,6 @@ export const ResizeSelectionBox = memo(
 
       return coordinate;
     });
-    console.log("🚀 ~ boxCoordinate:", boxCoordinate);
     if (!boxCoordinate) return null;
 
     return (
@@ -59,9 +64,27 @@ export const ResizeSelectionBox = memo(
           style={{ cursor: "nwse-resize" }}
           onPointerDown={(e) => {
             e.stopPropagation();
-            onResizePointerDownHandler(ISide.Top, boxCoordinate);
+            onResizePointerDownHandler(ISide.Top, boxCoordinate, e);
           }}
         />
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "ns-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onResizePointerDownHandler(
+              ISide.Top + ISide.Right,
+              boxCoordinate,
+              e
+            );
+          }}
+        />
+
         <rect
           className="fill-transparent stroke-blue-500 stroke-[3px]"
           x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
@@ -71,21 +94,41 @@ export const ResizeSelectionBox = memo(
           style={{ cursor: "nesw-resize" }}
           onPointerDown={(e) => {
             e.stopPropagation();
-            onResizePointerDownHandler(ISide.Right, boxCoordinate);
+            e.preventDefault();
+            onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
           }}
         />
+
         <rect
           className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
+          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y - HANDLE_WIDTH / 2}
           width={HANDLE_WIDTH}
           height={HANDLE_WIDTH}
           style={{ cursor: "nesw-resize" }}
           onPointerDown={(e) => {
             e.stopPropagation();
-            onResizePointerDownHandler(ISide.Left, boxCoordinate);
+            onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
           }}
         />
+        {/* BOTTOM SIDE */}
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "ew-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(
+              ISide.Right + ISide.Bottom,
+              boxCoordinate,
+              e
+            );
+          }}
+        />
+
         <rect
           className="fill-transparent stroke-blue-500 stroke-[3px]"
           x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
@@ -95,7 +138,53 @@ export const ResizeSelectionBox = memo(
           style={{ cursor: "nwse-resize" }}
           onPointerDown={(e) => {
             e.stopPropagation();
-            onResizePointerDownHandler(ISide.Bottom, boxCoordinate);
+            onResizePointerDownHandler(ISide.Bottom, boxCoordinate, e);
+          }}
+        />
+
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "ns-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(
+              ISide.Bottom + ISide.Left,
+              boxCoordinate,
+              e
+            );
+          }}
+        />
+
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nesw-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(ISide.Left, boxCoordinate, e);
+          }}
+        />
+        <rect
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={boxCoordinate.x - HANDLE_WIDTH / 2}
+          y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "ew-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizePointerDownHandler(
+              ISide.Left + ISide.Top,
+              boxCoordinate,
+              e
+            );
           }}
         />
 

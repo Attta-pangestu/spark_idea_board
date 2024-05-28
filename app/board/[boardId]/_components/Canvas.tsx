@@ -22,9 +22,15 @@ import {
   ILayerEnum,
   ILayerType,
   IPoints,
+  ISide,
+  XYWH,
 } from "@/types/canvas";
 import { MousePresenceOtherUsers } from "./MousePresenceOtherUser";
-import { connectionIdToColor, deltaPointEventToCamera } from "@/lib/utils";
+import {
+  connectionIdToColor,
+  deltaPointEventToCamera,
+  resizeSelectedBox,
+} from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { LayerPreview } from "./LayerPreview";
 import { ResizeSelectionBox } from "./ResizeSelectionBox";
@@ -34,20 +40,19 @@ interface ICanvas {
 }
 
 export const Canvas = ({ boardId }: ICanvas) => {
+  const [camera, setCamera] = useState<ICamera>({ x: 0, y: 0 });
+  const [lastUsedColor, setLastUsedColor] = useState<Icolor>({
+    r: 1,
+    g: 32,
+    b: 78,
+  });
+
   const [canvasState, setCanvasState] = useState<ICanvasState>({
     mode: ICanvasMode.None,
   });
 
-  const [camera, setCamera] = useState<ICamera>({ x: 0, y: 0 });
-  const [lastUsedColor, setLastUsedColor] = useState<Icolor>({
-    r: 0,
-    g: 0,
-    b: 0,
-  });
-
-  const layerIds = useStorage((root) => root.layerIds);
-
   // ===================================== HOOKS =================
+  const layerIds = useStorage((root) => root.layerIds);
 
   const history = useHistory();
   const canUndo = useCanUndo();
@@ -55,27 +60,25 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
   // Selection for other users
   const usersSelection = useOthersMapped((other) => other.presence.selection);
-  console.log({ usersSelection });
   // ===================================== HOOKS ================================
 
   // ===================================== MEMO ================================
   const selectionColor = useMemo(() => {
     const layerAndColorRecord: Record<string, string> = {};
-    console.log({ layerAndColorRecord });
+    ({ layerAndColorRecord });
     for (const userInfo of usersSelection) {
       const [connectionId, selection] = userInfo;
-      console.log({ connectionId, selection });
       for (const layerId of selection) {
         layerAndColorRecord[layerId] = connectionIdToColor(connectionId);
       }
-      console.log({ layerAndColorRecord });
       return layerAndColorRecord;
     }
   }, [usersSelection]);
 
   // ===================================== MEMO ================================
 
-  // ===================================== Handler ================================
+  // ===================================== Cnavas State Mode Handler ================================
+
   const insertingLayer = useMutation(
     (
       { storage, setMyPresence },
@@ -90,14 +93,11 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const liveLayerIds = storage.get("layerIds");
       const layerId = nanoid();
 
-      setLastUsedColor(() => ({ r: 1, g: 32, b: 78 }));
-
-      console.log({ lastUsedColor });
       const layer = new LiveObject({
         typeLayer: layerType,
         x: position.x,
         y: position.y,
-        height: 100,
+        height: 150,
         width: 100,
         fill: lastUsedColor,
       });
@@ -106,10 +106,27 @@ export const Canvas = ({ boardId }: ICanvas) => {
       liveLayers.set(layerId, layer);
 
       setMyPresence({ selection: [layerId] }, { addToHistory: true });
-      setCanvasState({ mode: ICanvasMode.None });
     },
     [lastUsedColor]
   );
+
+  const resizingLayer = useMutation(
+    ({ storage, self }, resizeCursor: IPoints) => {
+      if (canvasState.mode !== ICanvasMode.Resizing) return;
+
+      const resizedCoordinate = resizeSelectedBox(
+        canvasState.initialBoxCoordinate,
+        canvasState.corner,
+        resizeCursor
+      );
+      const liveLayers = storage.get("layers");
+      const selectedLayer = liveLayers.get(self.presence.selection[0]);
+      if (selectedLayer) selectedLayer.update(resizedCoordinate);
+    },
+    [canvasState]
+  );
+
+  // ===================================== Handler ================================
 
   const onWheelHandler = useCallback((e: React.WheelEvent) => {
     setCamera((camera) => ({
@@ -121,10 +138,21 @@ export const Canvas = ({ boardId }: ICanvas) => {
   const onPointerMove = useMutation(
     ({ setMyPresence }, e: React.PointerEvent) => {
       e.preventDefault();
-      const deltaUpdateCamera = deltaPointEventToCamera(e, camera);
-      setMyPresence({ cursor: deltaUpdateCamera });
+      const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
+      const absolutePoint = { x: e.clientX, y: e.clientY };
+      setMyPresence({ cursor: relativePointCamera });
+
+      if (canvasState.mode === ICanvasMode.Resizing) {
+        const { initialBoxCoordinate, corner } = canvasState;
+        const resizedCoordinate = resizeSelectedBox(
+          initialBoxCoordinate,
+          corner,
+          relativePointCamera
+        );
+        resizingLayer(resizedCoordinate);
+      }
     },
-    []
+    [canvasState]
   );
 
   const onPointerLeave = useMutation(({ setMyPresence }) => {
@@ -132,15 +160,16 @@ export const Canvas = ({ boardId }: ICanvas) => {
   }, []);
 
   const onPointerUp = useMutation(
-    ({}, e: React.PointerEvent) => {
+    ({ self }, e: React.PointerEvent) => {
       const point = deltaPointEventToCamera(e, camera);
-
+      const selectionLayer = self.presence.selection[0];
+      console.log({ selectionLayer });
       if (canvasState.mode === ICanvasMode.Inserting) {
         insertingLayer(canvasState.LayerType, point);
-      } else {
-        setCanvasState({ mode: ICanvasMode.None });
+        setCanvasState({ mode: ICanvasMode.Translating, current: point });
+      } else if (canvasState.mode === ICanvasMode.Resizing) {
+        console.log("some function to save resize to presence");
       }
-
       history.resume();
     },
     [camera, canvasState, history, insertingLayer]
@@ -151,30 +180,53 @@ export const Canvas = ({ boardId }: ICanvas) => {
       if (
         canvasState.mode === ICanvasMode.Pencil ||
         canvasState.mode === ICanvasMode.Inserting
-      )
+      ) {
         return null;
+      }
 
       history.pause();
       e.stopPropagation();
+      e.preventDefault();
 
-      const point = deltaPointEventToCamera(e, camera);
+      const pointerCoordinate = deltaPointEventToCamera(e, camera);
 
       // if pointer on canvas
-      if (canvasState.mode === ICanvasMode.None && layerId === "canvas") {
+      if (layerId === "canvas") {
+        setCanvasState({ mode: ICanvasMode.None });
         setMyPresence({ selection: [] });
-        console.log("Remove All Selection");
       }
-
       // only select one layer
-      if (!self.presence.selection.includes(layerId)) {
+      else if (!self.presence.selection.includes(layerId)) {
+        setCanvasState({
+          mode: ICanvasMode.Translating,
+          current: pointerCoordinate,
+        });
         setMyPresence({ selection: [layerId] }, { addToHistory: true });
       }
-      setCanvasState({ mode: ICanvasMode.Translating, current: point });
     },
-    [setCanvasState, camera, history, canvasState.mode]
+    [setCanvasState, camera, history, canvasState]
+  );
+
+  const onResizePointerDownHandler = useCallback(
+    (corner: ISide, initialBoxCoordinate: XYWH, e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      history.pause();
+      setCanvasState({
+        mode: ICanvasMode.Resizing,
+        corner,
+        initialBoxCoordinate,
+      });
+    },
+    [history]
   );
 
   // ===================================== Handler ================================
+
+  // ===================================== Check Canvas Stat ================================
+  useEffect(() => {
+    console.log("canvasState updated:", canvasState);
+  }, [canvasState]);
 
   return (
     <main className="h-full w-full relative bg-neutral-100 touch-none ">
@@ -202,11 +254,25 @@ export const Canvas = ({ boardId }: ICanvas) => {
               key={layerId}
               id={layerId}
               onPressedDown={onPointerDownHandler}
+              usedColor={lastUsedColor}
               selectionColor={selectionColor?.[layerId]}
             />
           ))}
           <MousePresenceOtherUsers />
-          <ResizeSelectionBox onResizePointerDownHandler={() => {}} />
+          {(canvasState.mode === ICanvasMode.Translating ||
+            canvasState.mode === ICanvasMode.Resizing) && (
+            <ResizeSelectionBox
+              onResizePointerDownHandler={onResizePointerDownHandler}
+              onResizePointerUpHandler={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            />
+          )}
+          {/* <ResizeSelectionBox
+            onResizePointerDownHandler={onResizePointerDownHandler}
+            onResizePointerUpHandler={() => {}}
+          /> */}
         </g>
       </svg>
     </main>
