@@ -144,12 +144,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
       if (canvasState.mode === ICanvasMode.Resizing) {
         const { initialBoxCoordinate, corner } = canvasState;
-        const resizedCoordinate = resizeSelectedBox(
-          initialBoxCoordinate,
-          corner,
-          relativePointCamera
-        );
-        resizingLayer(resizedCoordinate);
+        resizingLayer(relativePointCamera);
       }
     },
     [canvasState]
@@ -161,6 +156,8 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
   const onPointerUp = useMutation(
     ({ self }, e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       const point = deltaPointEventToCamera(e, camera);
       const selectionLayer = self.presence.selection[0];
       console.log({ selectionLayer });
@@ -194,6 +191,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
       if (layerId === "canvas") {
         setCanvasState({ mode: ICanvasMode.None });
         setMyPresence({ selection: [] });
+        console.log("Remove All Mode.......");
       }
       // only select one layer
       else if (!self.presence.selection.includes(layerId)) {
@@ -202,23 +200,37 @@ export const Canvas = ({ boardId }: ICanvas) => {
           current: pointerCoordinate,
         });
         setMyPresence({ selection: [layerId] }, { addToHistory: true });
+      } else {
+        setCanvasState({ mode: ICanvasMode.None });
+        setMyPresence({ selection: [] });
       }
     },
     [setCanvasState, camera, history, canvasState]
   );
 
-  const onResizePointerDownHandler = useCallback(
-    (corner: ISide, initialBoxCoordinate: XYWH, e: React.PointerEvent) => {
+  const onResizePointerDownHandler = useMutation(
+    (
+      { setMyPresence },
+      corner: ISide,
+      initialBoxCoordinate: XYWH,
+      e: React.PointerEvent
+    ) => {
       e.preventDefault();
       e.stopPropagation();
       history.pause();
-      setCanvasState({
-        mode: ICanvasMode.Resizing,
-        corner,
-        initialBoxCoordinate,
-      });
+      if (canvasState.mode === ICanvasMode.Resizing) {
+        console.log("Selesai Resizing");
+        setCanvasState({ mode: ICanvasMode.None });
+        setMyPresence({ selection: [] });
+      } else {
+        setCanvasState({
+          mode: ICanvasMode.Resizing,
+          initialBoxCoordinate,
+          corner,
+        });
+      }
     },
-    [history]
+    [history, canvasState]
   );
 
   // ===================================== Handler ================================

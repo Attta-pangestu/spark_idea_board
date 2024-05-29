@@ -33,7 +33,7 @@ export const Toolbar = ({
   const ToolWrapper = ({ children }: { children: React.ReactNode }) => {
     return (
       <div
-        className={`bg-white rounded-md p-1.5 flex gap-y-2 flex-col items-center shadow-md`}
+        className={`bg-white rounded-lg p-1.5 flex gap-y-2 flex-col items-center shadow-lg`}
       >
         {children}
       </div>
@@ -41,7 +41,7 @@ export const Toolbar = ({
   };
 
   return (
-    <div className="absolute top-[50%] -translate-y-[50%] left-4 flex flex-col gap-y-2 bg-slate-100  p-3 shadow-md">
+    <div className="absolute top-[50%] -translate-y-[50%] left-4 flex flex-col gap-y-2 bg-transparent  p-3 shadow-md">
       <ToolWrapper>
         <ToolButton
           label="Select"
