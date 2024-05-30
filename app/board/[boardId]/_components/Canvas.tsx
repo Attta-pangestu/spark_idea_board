@@ -25,7 +25,7 @@ import {
   ISide,
   XYWH,
 } from "@/types/canvas";
-import { MousePresenceOtherUsers } from "./MousePresenceOtherUser";
+import { MousePresenceOtherUsers } from "./Mouse/MousePresenceOtherUser";
 import {
   connectionIdToColor,
   deltaPointEventToCamera,
@@ -34,6 +34,7 @@ import {
 import { nanoid } from "nanoid";
 import { LayerPreview } from "./LayerPreview";
 import { ResizeSelectionBox } from "./ResizeSelectionBox";
+import { MousePresenceSelf } from "./Mouse/MousePresenceSelf";
 
 interface ICanvas {
   boardId: string;
@@ -41,6 +42,7 @@ interface ICanvas {
 
 export const Canvas = ({ boardId }: ICanvas) => {
   const [camera, setCamera] = useState<ICamera>({ x: 0, y: 0 });
+  const [cursorPosition, setCursorPosition] = useState<IPoints>({ x: 0, y: 0 });
   const [lastUsedColor, setLastUsedColor] = useState<Icolor>({
     r: 1,
     g: 32,
@@ -132,7 +134,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
   const onDeleteLayerHandler = useMutation(({ storage }, layerId: string) => {
     const liveLayers = storage.get("layers");
     liveLayers.delete(layerId);
-    console.log("Berhasil menghapus layer")
+    console.log("Berhasil menghapus layer");
   }, []);
 
   // ===================================== Layer Handler ================================
@@ -152,6 +154,8 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
       const absolutePoint = { x: e.clientX, y: e.clientY };
       setMyPresence({ cursor: relativePointCamera });
+      const pointerCoordinate = deltaPointEventToCamera(e, camera);
+      setCursorPosition(pointerCoordinate);
 
       if (canvasState.mode === ICanvasMode.Resizing) {
         const { initialBoxCoordinate, corner } = canvasState;
@@ -196,7 +200,9 @@ export const Canvas = ({ boardId }: ICanvas) => {
       e.stopPropagation();
       e.preventDefault();
 
+      // update cursor position
       const pointerCoordinate = deltaPointEventToCamera(e, camera);
+      setCursorPosition(pointerCoordinate);
 
       // if pointer on canvas
       if (layerId === "canvas") {
@@ -264,7 +270,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
         redo={history.redo}
       />
       <svg
-        className="h-[100vh] w-[100vw]"
+        className="h-[100vh] w-[100vw] cursor-none"
         onPointerMove={onPointerMove}
         onWheel={onWheelHandler}
         onPointerUp={onPointerUp}
@@ -282,6 +288,11 @@ export const Canvas = ({ boardId }: ICanvas) => {
             />
           ))}
           <MousePresenceOtherUsers />
+          <MousePresenceSelf
+            canvasMode={canvasState.mode}
+            cursor={cursorPosition}
+          />
+
           {(canvasState.mode === ICanvasMode.Translating ||
             canvasState.mode === ICanvasMode.Resizing) && (
             <ResizeSelectionBox

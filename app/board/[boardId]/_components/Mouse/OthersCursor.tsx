@@ -1,6 +1,7 @@
 "use client";
 import { connectionIdToColor } from "@/lib/utils";
 import { useOther } from "@/liveblocks.config";
+import { ICanvasMode } from "@/types/canvas";
 import { MousePointer2 } from "lucide-react";
 import { memo, useEffect } from "react";
 
@@ -40,9 +41,6 @@ export const Cursor = ({ connectionId }: ICursor) => {
           color: connectionIdToColor(connectionId),
         }}
       />
-      <div className="absolute left-5 px-1.5 py-0.5 rounded-md text-sm bg-black text-white font-semibold">
-        {name}
-      </div>
     </foreignObject>
   );
 };

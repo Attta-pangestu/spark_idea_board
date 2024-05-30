@@ -1,4 +1,11 @@
-import { ICamera, ILayerType, IPoints, ISide, XYWH } from "@/types/canvas";
+import {
+  ICamera,
+  ICanvasMode,
+  ILayerType,
+  IPoints,
+  ISide,
+  XYWH,
+} from "@/types/canvas";
 import { type ClassValue, clsx } from "clsx";
 import React from "react";
 import { twMerge } from "tailwind-merge";
@@ -27,6 +34,27 @@ let left: number;
 let right: number;
 let top: number;
 let bottom: number;
+
+export function canvasModeToString(mode: ICanvasMode): string {
+  switch (mode) {
+    case ICanvasMode.None:
+      return "Seleting";
+    case ICanvasMode.Pressing:
+      return "Pressing";
+    case ICanvasMode.SelectionNet:
+      return "SelectionNet";
+    case ICanvasMode.Translating:
+      return "Translating";
+    case ICanvasMode.Inserting:
+      return "Inserting";
+    case ICanvasMode.Resizing:
+      return "Resizing";
+    case ICanvasMode.Pencil:
+      return "Pencil";
+    default:
+      return ""; //
+  }
+}
 
 export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
   const firstSelected = layers[0];

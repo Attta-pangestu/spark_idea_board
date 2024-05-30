@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { useOthersConnectionIds } from "@/liveblocks.config";
-import { Cursor } from "./Cursor";
+import { Cursor } from "./OthersCursor";
 
 const Cursors = () => {
   const ids = useOthersConnectionIds();
