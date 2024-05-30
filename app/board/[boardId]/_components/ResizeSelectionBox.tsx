@@ -5,8 +5,7 @@ import { ILayerEnum, ILayerType, ISide, XYWH } from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
-
-const HANDLE_WIDTH = 10;
+import { SelectionBox } from "@/components/layer/SelectionBox";
 
 interface ISelectionBoxMenu {
   onResizePointerDownHandler: (
@@ -15,17 +14,21 @@ interface ISelectionBoxMenu {
     e: React.PointerEvent
   ) => void;
   onResizePointerUpHandler?: (e: React.PointerEvent) => void;
-  onDelet;
+  onDeleteLayerHandler?: (layerId: string) => void;
 }
 
 export const ResizeSelectionBox = memo(
   ({
     onResizePointerDownHandler,
     onResizePointerUpHandler,
+    onDeleteLayerHandler,
   }: ISelectionBoxMenu) => {
-    // return selected layer id
     const selectedLayerIdBySelf: string[] = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection : []
+    );
+    // return selected layer id
+    const layerId = useSelf((me) =>
+      me.presence.selection.length > 0 ? me.presence.selection[0] : undefined
     );
 
     // getting selection coordinate
@@ -43,24 +46,33 @@ export const ResizeSelectionBox = memo(
 
       return coordinate;
     });
-    if (!boxCoordinate) return null;
+
+    if (!boxCoordinate || !layerId) return null;
 
     const IconBox = ({
       children,
       onClick,
     }: {
       children: React.ReactNode;
-      onClick?: () => void;
+      onClick?: (layerId: string) => void;
     }) => {
       return (
-        <div className=" p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white ">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log({ layerId });
+            onClick?.(layerId);
+          }}
+          className=" p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white "
+        >
           {children}
-        </div>
+        </button>
       );
     };
 
-    return (
-      <>
+    const LayerRendered = () => {
+      return (
         <rect
           className=" fill-transparent stroke-blue-500 stroke-[3px] pointer-events-none"
           x={0}
@@ -71,164 +83,28 @@ export const ResizeSelectionBox = memo(
             transform: `translate(${boxCoordinate.x}px, ${boxCoordinate.y}px) `,
           }}
         />
-        {/* Create action box to handle resize each corner */}
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "nwse-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(ISide.Top, boxCoordinate, e);
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "ns-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onResizePointerDownHandler(
-              ISide.Top + ISide.Right,
-              boxCoordinate,
-              e
-            );
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
+      );
+    };
 
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "nesw-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
-          }}
-          onPointerUp={onResizePointerUpHandler}
+    return (
+      <>
+        <LayerRendered />
+        <SelectionBox
+          boxCoordinate={boxCoordinate}
+          onResizePointerDownHandler={onResizePointerDownHandler}
+          onResizePointerUpHandler={onResizePointerUpHandler}
         />
-
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "nesw-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-        {/* BOTTOM SIDE */}
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "ew-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(
-              ISide.Right + ISide.Bottom,
-              boxCoordinate,
-              e
-            );
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "nwse-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(ISide.Bottom, boxCoordinate, e);
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "ns-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(
-              ISide.Bottom + ISide.Left,
-              boxCoordinate,
-              e
-            );
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "nesw-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(ISide.Left, boxCoordinate, e);
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-        <rect
-          className="fill-transparent stroke-blue-500 stroke-[3px]"
-          x={boxCoordinate.x - HANDLE_WIDTH / 2}
-          y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
-          width={HANDLE_WIDTH}
-          height={HANDLE_WIDTH}
-          style={{ cursor: "ew-resize" }}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onResizePointerDownHandler(
-              ISide.Left + ISide.Top,
-              boxCoordinate,
-              e
-            );
-          }}
-          onPointerUp={onResizePointerUpHandler}
-        />
-
         <foreignObject
           x={boxCoordinate.x + boxCoordinate.width / 2 - 100}
           y={boxCoordinate.y - 90}
           width={200}
-          height={60}
+          height={50}
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
         >
           <div className=" bg-black p-1  rounded-md flex items-center justify-center gap-2">
-            <IconBox onClick={() => {}}>
+            <IconBox onClick={onDeleteLayerHandler}>
               <Trash2 className="w-6 h-6 cursor-pointer " />{" "}
-            </IconBox>
-            <IconBox>
-              <Trash2 className="w-6 h-6 " />{" "}
-            </IconBox>
-            <IconBox>
-              <Trash2 className="w-6 h-6 " />{" "}
             </IconBox>
           </div>
         </foreignObject>

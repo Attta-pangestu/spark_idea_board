@@ -126,6 +126,17 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [canvasState]
   );
 
+  // ===================================== Canvas State Mode Handler ================================
+
+  // ===================================== Layer Handler ================================
+  const onDeleteLayerHandler = useMutation(({ storage }, layerId: string) => {
+    const liveLayers = storage.get("layers");
+    liveLayers.delete(layerId);
+    console.log("Berhasil menghapus layer")
+  }, []);
+
+  // ===================================== Layer Handler ================================
+
   // ===================================== Handler ================================
 
   const onWheelHandler = useCallback((e: React.WheelEvent) => {
@@ -279,6 +290,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
+              onDeleteLayerHandler={onDeleteLayerHandler}
             />
           )}
           {/* <ResizeSelectionBox

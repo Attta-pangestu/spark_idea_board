@@ -98,6 +98,8 @@ export const resizeSelectedBox = (
     results.width = Math.abs(cursorRelative.x - boxCoordinate.x);
   }
 
+  // ============== Corner ================
+
   //corner top
   if (corner === ISide.Top) {
     results.x = cursorRelative.x;
@@ -119,6 +121,31 @@ export const resizeSelectedBox = (
     results.height = Math.abs(
       boxCoordinate.height +
         (cursorRelative.y - (boxCoordinate.y + boxCoordinate.height))
+    );
+  }
+  // corner right
+  if (corner === ISide.Right) {
+    results.width = Math.abs(
+      boxCoordinate.width +
+        cursorRelative.x -
+        (boxCoordinate.x + boxCoordinate.width)
+    );
+
+    results.y = cursorRelative.y;
+    results.height = Math.abs(
+      boxCoordinate.height + (boxCoordinate.y - cursorRelative.y)
+    );
+  }
+
+  // corner Bottom
+  if (corner === ISide.Bottom) {
+    results.width = Math.abs(
+      boxCoordinate.width +
+        cursorRelative.x -
+        (boxCoordinate.x + boxCoordinate.width)
+    );
+    results.height = Math.abs(
+      boxCoordinate.height + (cursorRelative.y - boxCoordinate.y)
     );
   }
 
