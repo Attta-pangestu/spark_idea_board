@@ -1,7 +1,13 @@
 "use client";
 
 import { LiveObject } from "@liveblocks/client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BoardInfo } from "./BoardInfo";
 import { Participants } from "./Participants";
 import { Toolbar } from "./Toolbar";
@@ -35,6 +41,8 @@ import { nanoid } from "nanoid";
 import { LayerPreview } from "./LayerPreview";
 import { ResizeSelectionBox } from "./ResizeSelectionBox";
 import { MousePresenceSelf } from "./Mouse/MousePresenceSelf";
+import { CurlyBraces } from "lucide-react";
+import { create } from "zustand";
 
 interface ICanvas {
   boardId: string;
@@ -42,16 +50,21 @@ interface ICanvas {
 
 export const Canvas = ({ boardId }: ICanvas) => {
   const [camera, setCamera] = useState<ICamera>({ x: 0, y: 0 });
-  const [cursorPosition, setCursorPosition] = useState<IPoints>({ x: 0, y: 0 });
   const [lastUsedColor, setLastUsedColor] = useState<Icolor>({
     r: 1,
     g: 32,
     b: 78,
   });
+  const [cursorPosition, setCursorPosition] = useState<IPoints>({
+    x: 0,
+    y: 0,
+  });
 
   const [canvasState, setCanvasState] = useState<ICanvasState>({
     mode: ICanvasMode.None,
   });
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
   // ===================================== HOOKS =================
   const layerIds = useStorage((root) => root.layerIds);
@@ -128,7 +141,57 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [canvasState]
   );
 
+  const translatingLayer = useMutation(
+    ({ storage, self }, cursorPosition: IPoints) => {
+      if (canvasState.mode !== ICanvasMode.Translating) return;
+      const { current } = canvasState;
+      const offset: IPoints = {
+        x: cursorPosition.x - current.x,
+        y: cursorPosition.y - current.y,
+      };
+
+      const liveLayers = storage.get("layers");
+
+      const selectedLayer = liveLayers.get(self.presence.selection[0]);
+      if (!selectedLayer) return;
+
+      selectedLayer.update({
+        x: selectedLayer.get("x") + offset.x,
+        y: selectedLayer.get("y") + offset.y,
+      });
+    },
+    [canvasState]
+  );
+
+  const updateMoveConditionalHandler = useMutation(
+    async ({ setMyPresence }, e: React.PointerEvent) => {
+      const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
+      setMyPresence({ cursor: relativePointCamera });
+      if (canvasState.mode === ICanvasMode.Resizing) {
+        resizingLayer(relativePointCamera);
+      } else if (canvasState.mode === ICanvasMode.Translating) {
+        translatingLayer(relativePointCamera);
+      }
+    },
+    [canvasState, camera, resizingLayer, translatingLayer, cursorPosition]
+  );
+
   // ===================================== Canvas State Mode Handler ================================
+
+  // ===================================== Utility ================================
+  const getSvgCoords = (e: React.PointerEvent) => {
+    if (svgRef.current) {
+      const svg = svgRef.current;
+      const point: any = svg?.createSVGPoint();
+      point.x = e.clientX;
+      point.y = e.clientY;
+      const svgCoords = point.matrixTransform(svg?.getScreenCTM()?.inverse());
+      return svgCoords;
+    }
+    return { x: 0, y: 0 };
+  };
+
+  // ===================================== Utility ================================
 
   // ===================================== Layer Handler ================================
   const onDeleteLayerHandler = useMutation(({ storage }, layerId: string) => {
@@ -148,21 +211,14 @@ export const Canvas = ({ boardId }: ICanvas) => {
     }));
   }, []);
 
-  const onPointerMove = useMutation(
-    ({ setMyPresence }, e: React.PointerEvent) => {
-      e.preventDefault();
-      const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
-      const absolutePoint = { x: e.clientX, y: e.clientY };
-      setMyPresence({ cursor: relativePointCamera });
-      const pointerCoordinate = deltaPointEventToCamera(e, camera);
-      setCursorPosition(pointerCoordinate);
-
-      if (canvasState.mode === ICanvasMode.Resizing) {
-        const { initialBoxCoordinate, corner } = canvasState;
-        resizingLayer(relativePointCamera);
-      }
+  const onPointerMove = useCallback(
+    async (e: React.PointerEvent) => {
+      await Promise.all([
+        updateMoveConditionalHandler(e),
+        setCursorPosition(deltaPointEventToCamera(e, camera)),
+      ]);
     },
-    [canvasState]
+    [updateMoveConditionalHandler, camera]
   );
 
   const onPointerLeave = useMutation(({ setMyPresence }) => {
@@ -175,10 +231,9 @@ export const Canvas = ({ boardId }: ICanvas) => {
       e.stopPropagation();
       const point = deltaPointEventToCamera(e, camera);
       const selectionLayer = self.presence.selection[0];
-      console.log({ selectionLayer });
       if (canvasState.mode === ICanvasMode.Inserting) {
         insertingLayer(canvasState.LayerType, point);
-        setCanvasState({ mode: ICanvasMode.Translating, current: point });
+        setCanvasState({ mode: ICanvasMode.Selecting });
       } else if (canvasState.mode === ICanvasMode.Resizing) {
         console.log("some function to save resize to presence");
       }
@@ -198,28 +253,26 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
       history.pause();
       e.stopPropagation();
-      e.preventDefault();
 
       // update cursor position
       const pointerCoordinate = deltaPointEventToCamera(e, camera);
-      setCursorPosition(pointerCoordinate);
-
       // if pointer on canvas
       if (layerId === "canvas") {
         setCanvasState({ mode: ICanvasMode.None });
         setMyPresence({ selection: [] });
-        console.log("Remove All Mode.......");
       }
+
       // only select one layer
       else if (!self.presence.selection.includes(layerId)) {
+        setCanvasState({
+          mode: ICanvasMode.Selecting,
+        });
+        setMyPresence({ selection: [layerId] }, { addToHistory: true });
+      } else {
         setCanvasState({
           mode: ICanvasMode.Translating,
           current: pointerCoordinate,
         });
-        setMyPresence({ selection: [layerId] }, { addToHistory: true });
-      } else {
-        setCanvasState({ mode: ICanvasMode.None });
-        setMyPresence({ selection: [] });
       }
     },
     [setCanvasState, camera, history, canvasState]
@@ -270,6 +323,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
         redo={history.redo}
       />
       <svg
+        // ref={svgRef}
         className="h-[100vh] w-[100vw] cursor-none"
         onPointerMove={onPointerMove}
         onWheel={onWheelHandler}
@@ -293,7 +347,8 @@ export const Canvas = ({ boardId }: ICanvas) => {
             cursor={cursorPosition}
           />
 
-          {(canvasState.mode === ICanvasMode.Translating ||
+          {(canvasState.mode === ICanvasMode.Selecting ||
+            canvasState.mode === ICanvasMode.Translating ||
             canvasState.mode === ICanvasMode.Resizing) && (
             <ResizeSelectionBox
               onResizePointerDownHandler={onResizePointerDownHandler}
@@ -302,12 +357,17 @@ export const Canvas = ({ boardId }: ICanvas) => {
                 e.stopPropagation();
               }}
               onDeleteLayerHandler={onDeleteLayerHandler}
+              onTranlateLayer={(layerId) => {
+                setCanvasState({
+                  mode: ICanvasMode.Translating,
+                  current: {
+                    x: cursorPosition.x - camera.x,
+                    y: cursorPosition.y - camera.y,
+                  },
+                });
+              }}
             />
           )}
-          {/* <ResizeSelectionBox
-            onResizePointerDownHandler={onResizePointerDownHandler}
-            onResizePointerUpHandler={() => {}}
-          /> */}
         </g>
       </svg>
     </main>

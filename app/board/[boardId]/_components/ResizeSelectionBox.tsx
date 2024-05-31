@@ -4,7 +4,7 @@ import React, { memo } from "react";
 import { ILayerEnum, ILayerType, ISide, XYWH } from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Move, Trash2 } from "lucide-react";
 import { SelectionBox } from "@/components/layer/SelectionBox";
 
 interface ISelectionBoxMenu {
@@ -13,8 +13,9 @@ interface ISelectionBoxMenu {
     initialPosition: XYWH,
     e: React.PointerEvent
   ) => void;
-  onResizePointerUpHandler?: (e: React.PointerEvent) => void;
-  onDeleteLayerHandler?: (layerId: string) => void;
+  onResizePointerUpHandler: (e: React.PointerEvent) => void;
+  onDeleteLayerHandler: (layerId: string) => void;
+  onTranlateLayer?: (layerId: string) => void;
 }
 
 export const ResizeSelectionBox = memo(
@@ -22,6 +23,7 @@ export const ResizeSelectionBox = memo(
     onResizePointerDownHandler,
     onResizePointerUpHandler,
     onDeleteLayerHandler,
+    onTranlateLayer,
   }: ISelectionBoxMenu) => {
     const selectedLayerIdBySelf: string[] = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection : []
@@ -59,9 +61,7 @@ export const ResizeSelectionBox = memo(
       return (
         <button
           onClick={(e) => {
-            e.stopPropagation();
             e.preventDefault();
-            console.log({ layerId });
             onClick?.(layerId);
           }}
           className=" p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white "
@@ -105,6 +105,9 @@ export const ResizeSelectionBox = memo(
           <div className=" bg-black p-1  rounded-md flex items-center justify-center gap-2">
             <IconBox onClick={onDeleteLayerHandler}>
               <Trash2 className="w-6 h-6 cursor-pointer " />{" "}
+            </IconBox>
+            <IconBox onClick={onTranlateLayer}>
+              <Move className="w-6 h-6 cursor-pointer " />{" "}
             </IconBox>
           </div>
         </foreignObject>

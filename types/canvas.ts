@@ -100,6 +100,7 @@ export enum ICanvasMode {
   Inserting,
   Resizing,
   Pencil,
+  Selecting,
 }
 
 export type ICanvasState =
@@ -135,6 +136,9 @@ export type ICanvasState =
       mode: ICanvasMode.Resizing;
       initialBoxCoordinate: XYWH;
       corner: ISide;
+    }
+  | {
+      mode: ICanvasMode.Selecting;
     };
 
 export type ILayerType =

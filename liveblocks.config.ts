@@ -9,7 +9,7 @@ import { ILayerType, Icolor } from "./types/canvas";
 
 const client = createClient({
   authEndpoint: "/api/liveblocks-auth",
-  throttle: 16,
+  throttle: 50,
   async resolveUsers({ userIds }) {
     // Used only for Comments and Notifications. Return a list of user information
     // retrieved from `userIds`. This info is used in comments, mentions etc.

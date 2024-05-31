@@ -38,9 +38,9 @@ let bottom: number;
 export function canvasModeToString(mode: ICanvasMode): string {
   switch (mode) {
     case ICanvasMode.None:
-      return "Seleting";
+      return "None";
     case ICanvasMode.Pressing:
-      return "Pressing";
+      return "Drawing";
     case ICanvasMode.SelectionNet:
       return "SelectionNet";
     case ICanvasMode.Translating:
@@ -51,8 +51,10 @@ export function canvasModeToString(mode: ICanvasMode): string {
       return "Resizing";
     case ICanvasMode.Pencil:
       return "Pencil";
+    case ICanvasMode.Selecting:
+      return "Selecting";
     default:
-      return ""; //
+      return "";
   }
 }
 
