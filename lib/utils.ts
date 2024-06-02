@@ -34,6 +34,7 @@ let left: number;
 let right: number;
 let top: number;
 let bottom: number;
+let angle: number | undefined;
 
 export function canvasModeToString(mode: ICanvasMode): string {
   switch (mode) {
@@ -61,16 +62,17 @@ export function canvasModeToString(mode: ICanvasMode): string {
 export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
   const firstSelected = layers[0];
 
-  if (!firstSelected) return { x: 0, y: 0, width: 0, height: 0 };
+  if (!firstSelected) return { x: 0, y: 0, width: 0, height: 0, angle: 0 };
 
   layers.map((layer, index) => {
-    const { x, y, width, height } = layer;
+    const { x, y, width, height, rotation } = layer;
 
     if (index === 0) {
       left = x;
       right = x + width;
       top = y;
       bottom = y + height;
+      angle = rotation ?? 0;
     } else {
       left = Math.min(left, x);
       right = Math.max(right, x + width);
@@ -85,6 +87,7 @@ export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
     y: top - padding,
     width: right - left + padding * 2,
     height: bottom - top + padding * 2,
+    angle: angle,
   };
 };
 
@@ -108,16 +111,20 @@ export const resizeSelectedBox = (
   }
   // right bottom
   if (corner === ISide.Right + ISide.Bottom) {
-    results.x = cursorRelative.x;
     results.width = Math.abs(
-      boxCoordinate.width - cursorRelative.x + boxCoordinate.x
+      boxCoordinate.width +
+        cursorRelative.x -
+        (boxCoordinate.x + boxCoordinate.width)
     );
   }
 
   // bottom left
   if (corner === ISide.Left + ISide.Bottom) {
-    results.y = cursorRelative.y;
-    results.height = Math.abs(cursorRelative.y - boxCoordinate.y);
+    results.height = Math.abs(
+      boxCoordinate.height +
+        cursorRelative.y -
+        (boxCoordinate.y + boxCoordinate.height)
+    );
   }
   // left top
   if (corner === ISide.Left + ISide.Top) {
@@ -175,20 +182,20 @@ export const resizeSelectedBox = (
         (boxCoordinate.x + boxCoordinate.width)
     );
     results.height = Math.abs(
-      boxCoordinate.height + (cursorRelative.y - boxCoordinate.y)
+      boxCoordinate.height +
+        (cursorRelative.y - (boxCoordinate.y + boxCoordinate.height))
     );
   }
 
-  // if (corner === (ISide.Right || ISide.Bottom)) {
-  //   results.x = cursorRelative.x;
-  //   results.width = Math.abs(
-  //     boxCoordinate.width + boxCoordinate.x - cursorRelative.x
-  //   );
-  //   results.y = cursorRelative.y;
-  //   results.height = Math.abs(
-  //     boxCoordinate.y + boxCoordinate.height - results.y
-  //   );
-  // }
-
   return results;
+};
+
+export const calculateRotationAngle = (
+  start: IPoints,
+  current: IPoints
+): number => {
+  const deltaX = Math.abs(current.x - start.x);
+  const deltaY = Math.abs(current.y - start.y);
+  const radians = Math.atan2(deltaY, deltaX);
+  return (radians * 180) / Math.PI;
 };

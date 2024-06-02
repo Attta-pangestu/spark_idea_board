@@ -1,11 +1,18 @@
 "use client";
 
 import React, { memo } from "react";
-import { ILayerEnum, ILayerType, ISide, XYWH } from "@/types/canvas";
+import {
+  ICanvasMode,
+  ILayerEnum,
+  ILayerType,
+  ISide,
+  XYWH,
+} from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
 import { Move, Trash2 } from "lucide-react";
-import { SelectionBox } from "@/components/layer/SelectionBox";
+import { SelectionBox } from "@/components/layer/ResizeAction";
+import { RotationAction } from "@/components/layer/RotationAction";
 
 interface ISelectionBoxMenu {
   onResizePointerDownHandler: (
@@ -16,14 +23,16 @@ interface ISelectionBoxMenu {
   onResizePointerUpHandler: (e: React.PointerEvent) => void;
   onDeleteLayerHandler: (layerId: string) => void;
   onTranlateLayer?: (layerId: string) => void;
+  onRotatingLayer: (layerId: string, currentAngle: number) => void;
 }
 
-export const ResizeSelectionBox = memo(
+export const SelectionBoxAction = memo(
   ({
     onResizePointerDownHandler,
     onResizePointerUpHandler,
     onDeleteLayerHandler,
     onTranlateLayer,
+    onRotatingLayer,
   }: ISelectionBoxMenu) => {
     const selectedLayerIdBySelf: string[] = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection : []
@@ -72,15 +81,16 @@ export const ResizeSelectionBox = memo(
     };
 
     const LayerRendered = () => {
+      const { width, height, x, y, angle } = boxCoordinate;
       return (
         <rect
           className=" fill-transparent stroke-blue-500 stroke-[3px] pointer-events-none"
           x={0}
           y={0}
-          width={boxCoordinate.width}
-          height={boxCoordinate.height}
+          width={width}
+          height={height}
           style={{
-            transform: `translate(${boxCoordinate.x}px, ${boxCoordinate.y}px) `,
+            transform: `translate(${x}px, ${y}px)  rotate(${angle}deg)`,
           }}
         />
       );
@@ -94,6 +104,13 @@ export const ResizeSelectionBox = memo(
           onResizePointerDownHandler={onResizePointerDownHandler}
           onResizePointerUpHandler={onResizePointerUpHandler}
         />
+
+        <RotationAction
+          boxCoordinate={boxCoordinate}
+          layerId={layerId}
+          onRotatingLayerHandler={onRotatingLayer}
+        />
+
         <foreignObject
           x={boxCoordinate.x + boxCoordinate.width / 2 - 100}
           y={boxCoordinate.y - 90}
@@ -116,4 +133,4 @@ export const ResizeSelectionBox = memo(
   }
 );
 
-ResizeSelectionBox.displayName = "ResizeSelectionBox";
+SelectionBoxAction.displayName = "ResizeSelectionBox";

@@ -30,6 +30,7 @@ export type IRectangleLayer = {
   width: number;
   fill: Icolor;
   value?: string;
+  rotation?: number; // Tambahkan properti rotation?
 };
 
 export type ICircleLayer = {
@@ -40,6 +41,7 @@ export type ICircleLayer = {
   width: number;
   fill: Icolor;
   value?: string;
+  rotation?: number; // Tambahkan properti rotation?
 };
 
 export type IPathLayer = {
@@ -51,6 +53,7 @@ export type IPathLayer = {
   fill: Icolor;
   points: number[][];
   value?: string;
+  rotation?: number; // Tambahkan properti rotation?
 };
 
 export type ITextLayer = {
@@ -61,6 +64,7 @@ export type ITextLayer = {
   width: number;
   fill: Icolor;
   value?: string;
+  rotation?: number; // Tambahkan properti rotation?
 };
 
 export type INoteLayer = {
@@ -71,6 +75,7 @@ export type INoteLayer = {
   width: number;
   fill: Icolor;
   value?: string;
+  rotation?: number; // Tambahkan properti rotation?
 };
 
 export type IPoints = {
@@ -83,6 +88,7 @@ export type XYWH = {
   y: number;
   width: number;
   height: number;
+  angle?: number;
 };
 
 export enum ISide {
@@ -101,6 +107,7 @@ export enum ICanvasMode {
   Resizing,
   Pencil,
   Selecting,
+  Rotating,
 }
 
 export type ICanvasState =
@@ -139,6 +146,10 @@ export type ICanvasState =
     }
   | {
       mode: ICanvasMode.Selecting;
+    }
+  | {
+      mode: ICanvasMode.Rotating;
+      currentAngle: number;
     };
 
 export type ILayerType =
