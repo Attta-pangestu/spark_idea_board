@@ -34,7 +34,7 @@ let left: number;
 let right: number;
 let top: number;
 let bottom: number;
-let angle: number | undefined;
+let rotationLayer: number | undefined;
 
 export function canvasModeToString(mode: ICanvasMode): string {
   switch (mode) {
@@ -62,7 +62,7 @@ export function canvasModeToString(mode: ICanvasMode): string {
 export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
   const firstSelected = layers[0];
 
-  if (!firstSelected) return { x: 0, y: 0, width: 0, height: 0, angle: 0 };
+  if (!firstSelected) return { x: 0, y: 0, width: 0, height: 0, rotation: 0 };
 
   layers.map((layer, index) => {
     const { x, y, width, height, rotation } = layer;
@@ -72,22 +72,23 @@ export const selectedBoxsCoordinate = (layers: ILayerType[]): XYWH => {
       right = x + width;
       top = y;
       bottom = y + height;
-      angle = rotation ?? 0;
+      rotationLayer = rotation;
     } else {
       left = Math.min(left, x);
       right = Math.max(right, x + width);
       top = Math.min(top, y);
       bottom = Math.max(bottom, y + height);
+      rotationLayer = rotation;
     }
   });
 
-  const padding = 4;
+  const padding = 0;
   return {
     x: left - padding,
     y: top - padding,
     width: right - left + padding * 2,
     height: bottom - top + padding * 2,
-    angle: angle,
+    rotation: rotationLayer,
   };
 };
 

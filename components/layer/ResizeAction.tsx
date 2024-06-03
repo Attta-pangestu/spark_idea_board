@@ -1,4 +1,4 @@
-import { ISide, XYWH } from "@/types/canvas";
+import { IPoints, ISide, XYWH } from "@/types/canvas";
 
 interface IResizingHelper {
   boxCoordinate: XYWH;
@@ -12,147 +12,88 @@ interface IResizingHelper {
 
 const HANDLE_WIDTH = 10;
 
-export const SelectionBox = ({
+const rotatePoint = (
+  cx: number,
+  cy: number,
+  x: number,
+  y: number,
+  angle: number
+): IPoints => {
+  const radians = (Math.PI / 180) * angle;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const nx = cos * (x - cx) - sin * (y - cy) + cx;
+  const ny = sin * (x - cx) + cos * (y - cy) + cy;
+  return { x: nx, y: ny };
+};
+
+export const ResizeBox = ({
   boxCoordinate,
   onResizePointerDownHandler,
   onResizePointerUpHandler,
 }: IResizingHelper) => {
+  const { x, y, width, height, rotation } = boxCoordinate;
+  const centerX = x;
+  const centerY = y;
+
+  const handles = [
+    { x: x, y: y },
+    { x: x + width / 2, y: y },
+    { x: x + width, y: y },
+    { x: x + width, y: y + height / 2 },
+    { x: x + width, y: y + height },
+    { x: x + width / 2, y: y + height },
+    { x: x, y: y + height },
+    { x: x, y: y + height / 2 },
+  ];
+
+  const rotatedHandles = handles.map((handle) =>
+    rotatePoint(centerX, centerY, handle.x, handle.y, rotation ?? 0)
+  );
+
+  // Pemetaan sisi ke indeks setelah rotasi
+  const getSideFromIndex = (index: number) => {
+    switch (index) {
+      case 0:
+        return ISide.Top + ISide.Left;
+      case 1:
+        return ISide.Top;
+      case 2:
+        return ISide.Top + ISide.Right;
+      case 3:
+        return ISide.Right;
+      case 4:
+        return ISide.Right + ISide.Bottom;
+      case 5:
+        return ISide.Bottom;
+      case 6:
+        return ISide.Bottom + ISide.Left;
+      case 7:
+        return ISide.Left;
+      default:
+        return ISide.Top;
+    }
+  };
+
   return (
     <>
-      {/* Create action box to handle resize each corner */}
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "nwse-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(ISide.Top, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "ns-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onResizePointerDownHandler(ISide.Top + ISide.Right, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "nesw-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "nesw-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(ISide.Right, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-      {/* BOTTOM SIDE */}
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "ew-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(
-            ISide.Right + ISide.Bottom,
-            boxCoordinate,
-            e
-          );
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "nwse-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(ISide.Bottom, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x + boxCoordinate.width / 2 - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "ns-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(
-            ISide.Bottom + ISide.Left,
-            boxCoordinate,
-            e
-          );
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y + boxCoordinate.height - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "nesw-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(ISide.Left, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
-      <rect
-        className="fill-transparent stroke-blue-500 stroke-[3px]"
-        x={boxCoordinate.x - HANDLE_WIDTH / 2}
-        y={boxCoordinate.y + boxCoordinate.height / 2 - HANDLE_WIDTH / 2}
-        width={HANDLE_WIDTH}
-        height={HANDLE_WIDTH}
-        style={{ cursor: "ew-resize" }}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          onResizePointerDownHandler(ISide.Left + ISide.Top, boxCoordinate, e);
-        }}
-        onPointerUp={onResizePointerUpHandler}
-      />
+      {rotatedHandles.map((handle, index) => (
+        <rect
+          key={index}
+          className="fill-transparent stroke-blue-500 stroke-[3px]"
+          x={handle.x - HANDLE_WIDTH / 2}
+          y={handle.y - HANDLE_WIDTH / 2}
+          width={HANDLE_WIDTH}
+          height={HANDLE_WIDTH}
+          style={{ cursor: "nwse-resize" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            const side = getSideFromIndex(index);
+            onResizePointerDownHandler(side, boxCoordinate, e);
+          }}
+          onPointerUp={onResizePointerUpHandler}
+        />
+      ))}
     </>
   );
 };

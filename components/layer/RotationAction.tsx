@@ -20,13 +20,14 @@ export const RotationAction = ({
       {/* Create action box to handle resize each corner */}
       <Rotate3D
         // TOP
-        className="fill-transparent stroke-blue-500 stroke-[3px] cursor-crosshair "
+        className="fill-transparent stroke-blue-500 stroke-[3px] cursor-crosshair  "
         x={boxCoordinate.x - ICON_OFFSET - HANDLE_WIDTH}
         y={boxCoordinate.y - ICON_OFFSET - HANDLE_WIDTH}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onClick={(e) => {
-          onRotatingLayerHandler(layerId, boxCoordinate.angle || 0);
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          onRotatingLayerHandler(layerId, boxCoordinate.rotation || 0);
         }}
       />
 
@@ -37,8 +38,9 @@ export const RotationAction = ({
         y={boxCoordinate.y - ICON_OFFSET - HANDLE_WIDTH}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onClick={(e) => {
-          onRotatingLayerHandler(layerId, boxCoordinate.angle || 0);
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          onRotatingLayerHandler(layerId, boxCoordinate.rotation || 0);
         }}
       />
 
@@ -54,8 +56,8 @@ export const RotationAction = ({
         }
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onClick={(e) => {
-          onRotatingLayerHandler(layerId, boxCoordinate.angle || 0);
+        onPointerDown={(e) => {
+          onRotatingLayerHandler(layerId, boxCoordinate.rotation || 0);
         }}
       />
 
@@ -66,8 +68,8 @@ export const RotationAction = ({
         y={boxCoordinate.y + boxCoordinate.height + ICON_OFFSET + HANDLE_WIDTH}
         width={HANDLE_WIDTH}
         height={HANDLE_WIDTH}
-        onClick={(e) => {
-          onRotatingLayerHandler(layerId, boxCoordinate.angle || 0);
+        onPointerDown={(e) => {
+          onRotatingLayerHandler(layerId, boxCoordinate.rotation || 0);
         }}
       />
     </>

@@ -1,6 +1,12 @@
 import { ICanvasMode, IPoints } from "@/types/canvas";
 import { Cursor } from "./OthersCursor";
-import { MousePointer2, Move, Scaling } from "lucide-react";
+import {
+  ImageDown,
+  MousePointer2,
+  Move,
+  Rotate3D,
+  Scaling,
+} from "lucide-react";
 import { canvasModeToString } from "@/lib/utils";
 import { noSSR } from "next/dynamic";
 
@@ -18,6 +24,26 @@ export const MousePresenceSelf = ({
       case ICanvasMode.Selecting:
         return (
           <MousePointer2
+            className="h-7 w-7"
+            style={{
+              fill: "black",
+              color: "red",
+            }}
+          />
+        );
+      case ICanvasMode.Inserting:
+        return (
+          <ImageDown
+            className="h-7 w-7"
+            style={{
+              fill: "black",
+              color: "red",
+            }}
+          />
+        );
+      case ICanvasMode.Rotating:
+        return (
+          <Rotate3D
             className="h-7 w-7"
             style={{
               fill: "black",

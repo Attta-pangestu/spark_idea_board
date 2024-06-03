@@ -11,7 +11,7 @@ import {
 import { useSelf, useStorage } from "@/liveblocks.config";
 import { selectedBoxsCoordinate } from "@/lib/utils";
 import { Move, Trash2 } from "lucide-react";
-import { SelectionBox } from "@/components/layer/ResizeAction";
+import { ResizeBox } from "@/components/layer/ResizeAction";
 import { RotationAction } from "@/components/layer/RotationAction";
 
 interface ISelectionBoxMenu {
@@ -46,14 +46,14 @@ export const SelectionBoxAction = memo(
     const boxCoordinate: XYWH = useStorage((root) => {
       // check selected layer id
       if (selectedLayerIdBySelf.length === 0)
-        return { x: 0, y: 0, width: 0, height: 0 };
+        return { x: 0, y: 0, width: 0, height: 0, rotation: 0 };
       // check type of layer not includes path
       const selectedLayers: ILayerType[] = selectedLayerIdBySelf.map(
         (layerId) => {
           return root.layers.get(layerId)!;
         }
       );
-      const coordinate = selectedBoxsCoordinate(selectedLayers);
+      const coordinate: XYWH = selectedBoxsCoordinate(selectedLayers);
 
       return coordinate;
     });
@@ -81,16 +81,16 @@ export const SelectionBoxAction = memo(
     };
 
     const LayerRendered = () => {
-      const { width, height, x, y, angle } = boxCoordinate;
+      const { width, height, x, y, rotation } = boxCoordinate;
       return (
         <rect
-          className=" fill-transparent stroke-blue-500 stroke-[3px] pointer-events-none"
+          className=" fill-transparent stroke-blue-500 stroke-[5px] pointer-events-none"
           x={0}
           y={0}
           width={width}
           height={height}
           style={{
-            transform: `translate(${x}px, ${y}px)  rotate(${angle}deg)`,
+            transform: `translate(${x}px, ${y}px)  rotate(${rotation}deg)`,
           }}
         />
       );
@@ -99,7 +99,7 @@ export const SelectionBoxAction = memo(
     return (
       <>
         <LayerRendered />
-        <SelectionBox
+        <ResizeBox
           boxCoordinate={boxCoordinate}
           onResizePointerDownHandler={onResizePointerDownHandler}
           onResizePointerUpHandler={onResizePointerUpHandler}

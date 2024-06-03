@@ -88,7 +88,7 @@ export type XYWH = {
   y: number;
   width: number;
   height: number;
-  angle?: number;
+  rotation?: number;
 };
 
 export enum ISide {
@@ -150,6 +150,8 @@ export type ICanvasState =
   | {
       mode: ICanvasMode.Rotating;
       currentAngle: number;
+      currentPosition: IPoints;
+      layerId: string;
     };
 
 export type ILayerType =

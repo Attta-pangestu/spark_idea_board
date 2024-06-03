@@ -14,14 +14,15 @@ export const RectangleShape = ({
   onPointerDown,
   selectionColor,
 }: IRectangleShape) => {
-  const { x, y, width, height, fill } = layerProps;
+  const { x, y, width, height, fill, rotation } = layerProps;
+  console.log(rotation);
 
   return (
     <rect
       className="drop-shadow-md"
-      // style={{ transform: `translate(${x}px, ${y}px)` }}
-      x={x}
-      y={y}
+      x={0}
+      y={0}
+      style={{ transform: `translate(${x}px, ${y}px)  rotate(${rotation}deg)` }}
       width={width}
       height={height}
       strokeWidth={selectionColor ? 3 : 1}

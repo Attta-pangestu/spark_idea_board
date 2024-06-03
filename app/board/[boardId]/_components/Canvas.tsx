@@ -27,6 +27,7 @@ import {
 } from "@/types/canvas";
 import { MousePresenceOtherUsers } from "./Mouse/MousePresenceOtherUser";
 import {
+  calculateRotationAngle,
   connectionIdToColor,
   deltaPointEventToCamera,
   resizeSelectedBox,
@@ -98,7 +99,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const liveLayers = storage.get("layers");
       const liveLayerIds = storage.get("layerIds");
       const layerId = nanoid();
-
+      console.log(rotation);
       const layer = new LiveObject({
         typeLayer: layerType,
         x: position.x,
@@ -106,7 +107,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
         height: 150,
         width: 100,
         fill: lastUsedColor,
-        rotation: rotation,
+        rotation: 45,
       });
 
       liveLayerIds.push(layerId);
@@ -148,8 +149,6 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
       if (!selectedLayer?.get("x")) return;
 
-      const layerX = selectedLayer.get("x");
-
       const updateLayer = {
         x: selectedLayer.get("x") + offset.x,
         y: selectedLayer.get("y") + offset.y,
@@ -169,6 +168,49 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [canvasState, cursorPosition]
   );
 
+  const rotatingLayer = useMutation(
+    ({ storage }, e: React.PointerEvent) => {
+      if (canvasState.mode !== ICanvasMode.Rotating) return;
+
+      const liveLayers = storage.get("layers");
+      const selectedLayer = liveLayers.get(canvasState.layerId);
+
+      console.log({ layerId: canvasState.layerId });
+
+      if (!selectedLayer) return;
+
+      console.log("Getting rotating angle");
+      const layerAngle = canvasState.currentAngle;
+      const initialPostion = canvasState.currentPosition;
+      const currentPosition = { x: e.clientX, y: e.clientY };
+      const currentAngle = calculateRotationAngle(
+        initialPostion,
+        currentPosition
+      );
+      const deltaAngle = currentAngle - layerAngle;
+
+      console.log({
+        deltaAngle,
+        currentAngle,
+        layerAngle,
+        initialPostion,
+        currentPosition,
+      });
+
+      selectedLayer.update({
+        rotation: deltaAngle,
+      });
+
+      setCanvasState({
+        mode: ICanvasMode.Rotating,
+        currentAngle: deltaAngle,
+        currentPosition: currentPosition,
+        layerId: canvasState.layerId,
+      });
+    },
+    [canvasState]
+  );
+
   const updateMoveConditionalHandler = useMutation(
     async ({ setMyPresence }, e: React.PointerEvent) => {
       const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
@@ -177,6 +219,8 @@ export const Canvas = ({ boardId }: ICanvas) => {
         resizingLayer(relativePointCamera);
       } else if (canvasState.mode === ICanvasMode.Translating) {
         translatingLayer();
+      } else if (canvasState.mode === ICanvasMode.Rotating) {
+        rotatingLayer(e);
       }
     },
     [canvasState, camera, resizingLayer, translatingLayer, cursorPosition]
@@ -299,6 +343,19 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [history, canvasState]
   );
 
+  const onRotationClickHandler = (layerId: string, currentAngle: number) => {
+    // switching mode
+    if (canvasState.mode !== ICanvasMode.Rotating) {
+      setCanvasState({
+        mode: ICanvasMode.Rotating,
+        currentAngle: currentAngle,
+        currentPosition: cursorPosition,
+        layerId: layerId,
+      });
+    } else {
+      setCanvasState({ mode: ICanvasMode.Selecting });
+    }
+  };
   // ===================================== Handler ================================
 
   // ===================================== Check Canvas Stat ================================
@@ -362,7 +419,9 @@ export const Canvas = ({ boardId }: ICanvas) => {
                   setCanvasState({ mode: ICanvasMode.Selecting });
                 }
               }}
-              onRotatingLayer={}
+              onRotatingLayer={(layerId, currentAngle) =>
+                onRotationClickHandler(layerId, currentAngle)
+              }
             />
           )}
         </g>

@@ -1,5 +1,3 @@
-"use cl";
-
 import { useStorage } from "@/liveblocks.config";
 import React, { memo } from "react";
 import { Icolor, ILayerEnum, ILayerType } from "@/types/canvas";
