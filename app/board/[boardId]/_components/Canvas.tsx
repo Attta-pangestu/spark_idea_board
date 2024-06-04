@@ -210,7 +210,10 @@ export const Canvas = ({ boardId }: ICanvas) => {
 
       if (!selectedLayer) return;
 
-      const [r, g, b] = color.match(/\w\w/g).map((c) => parseInt(c, 16));
+      const rgb = color.match(/\w\w/g);
+      if (!rgb) return;
+
+      const [r, g, b] = rgb.map((c) => parseInt(c, 16));
 
       selectedLayer.update({
         fill: { r, g, b },
