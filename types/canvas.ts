@@ -138,6 +138,7 @@ export type ICanvasState =
   | {
       mode: ICanvasMode.Translating;
       current: IPoints;
+      side?: ISide;
     }
   | {
       mode: ICanvasMode.Resizing;
@@ -152,6 +153,7 @@ export type ICanvasState =
       currentAngle: number;
       currentPosition: IPoints;
       layerId: string;
+      centerRotation: IPoints;
     };
 
 export type ILayerType =

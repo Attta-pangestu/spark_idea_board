@@ -1,4 +1,4 @@
-import { ICanvasMode, IPoints } from "@/types/canvas";
+import { ICanvasMode, IPoints, ISide } from "@/types/canvas";
 import { Cursor } from "./OthersCursor";
 import {
   ImageDown,
@@ -13,9 +13,11 @@ import { noSSR } from "next/dynamic";
 export const MousePresenceSelf = ({
   canvasMode,
   cursor,
+  side,
 }: {
   canvasMode: ICanvasMode;
   cursor: IPoints;
+  side?: ISide;
 }) => {
   const { x, y } = cursor;
 
@@ -93,7 +95,7 @@ export const MousePresenceSelf = ({
         transform: `translateX(${x}px) translateY(${y}px) `,
       }}
       height={50}
-      width={(canvasMode.toString() + "You - Mode:").length * 15 + 34}
+      width={(canvasMode.toString() + "You - Mode:").length * 15 + 64}
       className="relative drop-shadow-md"
       pointerEvents="none"
     >
@@ -101,6 +103,7 @@ export const MousePresenceSelf = ({
 
       <div className="absolute left-5 px-1.5 py-0.5 rounded-md text-sm bg-black text-white font-semibold">
         You - Mode: {canvasModeToString(canvasMode)}
+        {canvasMode === ICanvasMode.Resizing && side}
       </div>
     </foreignObject>
   );

@@ -99,7 +99,6 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const liveLayers = storage.get("layers");
       const liveLayerIds = storage.get("layerIds");
       const layerId = nanoid();
-      console.log(rotation);
       const layer = new LiveObject({
         typeLayer: layerType,
         x: position.x,
@@ -107,7 +106,7 @@ export const Canvas = ({ boardId }: ICanvas) => {
         height: 150,
         width: 100,
         fill: lastUsedColor,
-        rotation: 45,
+        rotation: 0,
       });
 
       liveLayerIds.push(layerId);
@@ -175,37 +174,30 @@ export const Canvas = ({ boardId }: ICanvas) => {
       const liveLayers = storage.get("layers");
       const selectedLayer = liveLayers.get(canvasState.layerId);
 
-      console.log({ layerId: canvasState.layerId });
-
       if (!selectedLayer) return;
 
-      console.log("Getting rotating angle");
       const layerAngle = canvasState.currentAngle;
       const initialPostion = canvasState.currentPosition;
       const currentPosition = { x: e.clientX, y: e.clientY };
+
       const currentAngle = calculateRotationAngle(
-        initialPostion,
+        canvasState.centerRotation.x,
+        canvasState.centerRotation.y,
         currentPosition
       );
-      const deltaAngle = currentAngle - layerAngle;
 
-      console.log({
-        deltaAngle,
-        currentAngle,
-        layerAngle,
-        initialPostion,
-        currentPosition,
-      });
+      console.log({ currentAngle });
 
       selectedLayer.update({
-        rotation: deltaAngle,
+        rotation: currentAngle,
       });
 
       setCanvasState({
         mode: ICanvasMode.Rotating,
-        currentAngle: deltaAngle,
+        currentAngle: currentAngle,
         currentPosition: currentPosition,
         layerId: canvasState.layerId,
+        centerRotation: canvasState.centerRotation,
       });
     },
     [canvasState]
@@ -343,13 +335,18 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [history, canvasState]
   );
 
-  const onRotationClickHandler = (layerId: string, currentAngle: number) => {
+  const onRotationClickHandler = (
+    layerId: string,
+    currentAngle: number,
+    center: IPoints
+  ) => {
     // switching mode
     if (canvasState.mode !== ICanvasMode.Rotating) {
       setCanvasState({
         mode: ICanvasMode.Rotating,
         currentAngle: currentAngle,
         currentPosition: cursorPosition,
+        centerRotation: center,
         layerId: layerId,
       });
     } else {
@@ -398,6 +395,11 @@ export const Canvas = ({ boardId }: ICanvas) => {
           <MousePresenceSelf
             canvasMode={canvasState.mode}
             cursor={cursorPosition}
+            side={
+              canvasState.mode === ICanvasMode.Resizing
+                ? canvasState.corner
+                : ISide.Top
+            }
           />
 
           {(canvasState.mode === ICanvasMode.Selecting ||
@@ -419,8 +421,8 @@ export const Canvas = ({ boardId }: ICanvas) => {
                   setCanvasState({ mode: ICanvasMode.Selecting });
                 }
               }}
-              onRotatingLayer={(layerId, currentAngle) =>
-                onRotationClickHandler(layerId, currentAngle)
+              onRotatingLayer={(layerId, currentAngle, center) =>
+                onRotationClickHandler(layerId, currentAngle, center)
               }
             />
           )}

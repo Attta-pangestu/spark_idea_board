@@ -1,4 +1,6 @@
+import { getCenterFromLayer } from "@/lib/utils";
 import { ILayerType, IRectangleLayer } from "@/types/canvas";
+import { CircleChevronUp, MoveUp } from "lucide-react";
 import rgbHex from "rgb-hex";
 
 interface IRectangleShape {
@@ -15,20 +17,29 @@ export const RectangleShape = ({
   selectionColor,
 }: IRectangleShape) => {
   const { x, y, width, height, fill, rotation } = layerProps;
-  console.log(rotation);
+
+  const centerPoint = getCenterFromLayer(layerProps);
+  console.log({ centerPoint });
 
   return (
-    <rect
-      className="drop-shadow-md"
-      x={0}
-      y={0}
-      style={{ transform: `translate(${x}px, ${y}px)  rotate(${rotation}deg)` }}
-      width={width}
-      height={height}
-      strokeWidth={selectionColor ? 3 : 1}
-      fill={`#${rgbHex(fill.r, fill.g, fill.b)}`}
-      stroke={selectionColor ?? "transparent"}
-      onPointerDown={(e) => onPointerDown(e, layerId)}
-    />
+    <>
+      <rect
+        className="drop-shadow-md"
+        x={x}
+        y={y}
+        style={{
+          transformOrigin: `${centerPoint.x}px ${centerPoint.y}px`,
+          transform: `rotate(${rotation}deg)`,
+        }}
+        width={width}
+        height={height}
+        strokeWidth={selectionColor ? 3 : 1}
+        fill={`#${rgbHex(fill.r, fill.g, fill.b)}`}
+        stroke={selectionColor ?? "transparent"}
+        onPointerDown={(e) => onPointerDown(e, layerId)}
+      />
+
+      {/* <circle cx={centerPoint.x} cy={centerPoint.y} r={16} fill="red" /> */}
+    </>
   );
 };

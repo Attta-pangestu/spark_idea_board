@@ -5,14 +5,18 @@ import {
   ICanvasMode,
   ILayerEnum,
   ILayerType,
+  IPoints,
   ISide,
   XYWH,
 } from "@/types/canvas";
 import { useSelf, useStorage } from "@/liveblocks.config";
-import { selectedBoxsCoordinate } from "@/lib/utils";
-import { Move, Trash2 } from "lucide-react";
-import { ResizeBox } from "@/components/layer/ResizeAction";
-import { RotationAction } from "@/components/layer/RotationAction";
+import {
+  convertNormalToRotationPosition,
+  getCenterFromLayer,
+  selectedBoxsCoordinate,
+} from "@/lib/utils";
+import { Move, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { ActionBox } from "@/components/layer/BoxAction";
 
 interface ISelectionBoxMenu {
   onResizePointerDownHandler: (
@@ -23,7 +27,11 @@ interface ISelectionBoxMenu {
   onResizePointerUpHandler: (e: React.PointerEvent) => void;
   onDeleteLayerHandler: (layerId: string) => void;
   onTranlateLayer?: (layerId: string) => void;
-  onRotatingLayer: (layerId: string, currentAngle: number) => void;
+  onRotatingLayer: (
+    layerId: string,
+    currentAngle: number,
+    center: IPoints
+  ) => void;
 }
 
 export const SelectionBoxAction = memo(
@@ -60,18 +68,29 @@ export const SelectionBoxAction = memo(
 
     if (!boxCoordinate || !layerId) return null;
 
+    const centerBoxCoordinate = getCenterFromLayer(boxCoordinate);
+    // const centerRotatePosition = convertNormalToRotationPosition(centerBoxCoordinate.x, centerBoxCoordinate.y)
+
     const IconBox = ({
       children,
       onClick,
     }: {
       children: React.ReactNode;
-      onClick?: (layerId: string) => void;
+      onClick?: (
+        layerId: string,
+        currentAngle: number,
+        center: IPoints
+      ) => void;
     }) => {
       return (
         <button
           onClick={(e) => {
             e.preventDefault();
-            onClick?.(layerId);
+            onClick?.(
+              layerId,
+              boxCoordinate.rotation ?? 0,
+              centerBoxCoordinate
+            );
           }}
           className=" p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white "
         >
@@ -80,17 +99,22 @@ export const SelectionBoxAction = memo(
       );
     };
 
-    const LayerRendered = () => {
+    const SelectionBox = () => {
       const { width, height, x, y, rotation } = boxCoordinate;
       return (
         <rect
           className=" fill-transparent stroke-blue-500 stroke-[5px] pointer-events-none"
-          x={0}
-          y={0}
+          x={x}
+          y={y}
           width={width}
           height={height}
           style={{
-            transform: `translate(${x}px, ${y}px)  rotate(${rotation}deg)`,
+            transformOrigin: `${centerBoxCoordinate.x}px ${centerBoxCoordinate.y}px`,
+            transform: `rotate(${rotation}deg)`,
+          }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onTranlateLayer?.(layerId);
           }}
         />
       );
@@ -98,17 +122,19 @@ export const SelectionBoxAction = memo(
 
     return (
       <>
-        <LayerRendered />
-        <ResizeBox
+        <SelectionBox />
+        <ActionBox
           boxCoordinate={boxCoordinate}
           onResizePointerDownHandler={onResizePointerDownHandler}
           onResizePointerUpHandler={onResizePointerUpHandler}
+          onRotatePointerDownHandler={onRotatingLayer}
         />
-
-        <RotationAction
-          boxCoordinate={boxCoordinate}
-          layerId={layerId}
-          onRotatingLayerHandler={onRotatingLayer}
+        <Plus
+          x={centerBoxCoordinate.x - 18}
+          y={centerBoxCoordinate.y - 18}
+          width={36}
+          height={36}
+          className="text-red-500 fill-red-500"
         />
 
         <foreignObject
@@ -125,6 +151,9 @@ export const SelectionBoxAction = memo(
             </IconBox>
             <IconBox onClick={onTranlateLayer}>
               <Move className="w-6 h-6 cursor-pointer " />{" "}
+            </IconBox>
+            <IconBox onClick={onRotatingLayer}>
+              <RefreshCcw className="w-6 h-6 cursor-pointer " />{" "}
             </IconBox>
           </div>
         </foreignObject>

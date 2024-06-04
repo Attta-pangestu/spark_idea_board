@@ -191,12 +191,39 @@ export const resizeSelectedBox = (
   return results;
 };
 
+export const getCenterFromLayer = (boxCoordinate: XYWH): IPoints => {
+  return {
+    x: boxCoordinate.x + boxCoordinate.width / 2,
+    y: boxCoordinate.y + boxCoordinate.height / 2,
+  };
+};
+
+export const convertNormalToRotationPosition = (
+  cx: number,
+  cy: number,
+  x: number,
+  y: number,
+  angle: number
+): IPoints => {
+  const radians = (Math.PI / 180) * angle;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const nx = cos * (x - cx) - sin * (y - cy) + cx;
+  const ny = sin * (x - cx) + cos * (y - cy) + cy;
+  return { x: nx, y: ny };
+};
+
 export const calculateRotationAngle = (
-  start: IPoints,
+  centerX: number,
+  centerY: number,
   current: IPoints
 ): number => {
-  const deltaX = Math.abs(current.x - start.x);
-  const deltaY = Math.abs(current.y - start.y);
-  const radians = Math.atan2(deltaY, deltaX);
-  return (radians * 180) / Math.PI;
+  // Calculate the angle between the center of rotation and the current pointer position
+  const deltaX = current.x - centerX;
+  const deltaY = current.y - centerY;
+
+  const angle = Math.atan2(deltaY, deltaX);
+
+  // Convert the angle from radians to degrees
+  return (angle * 180) / Math.PI;
 };
