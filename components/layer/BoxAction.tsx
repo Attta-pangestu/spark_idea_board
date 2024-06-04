@@ -14,11 +14,7 @@ interface IResizingHelper {
     e: React.PointerEvent
   ) => void;
   onResizePointerUpHandler?: (e: React.PointerEvent) => void;
-  onRotatePointerDownHandler?: (
-    layerId: string,
-    currentAngle: number,
-    center: IPoints
-  ) => void;
+  onRotatePointerDownHandler?: () => void;
 }
 
 const HANDLE_WIDTH = 10;
@@ -40,13 +36,14 @@ const getSideFromPoints = (
     if (y === maxY) return ISide.Bottom;
     return ISide.Right;
   }
-  return ISide.Top;
+  return ISide.Left;
 };
 
 export const ActionBox: React.FC<IResizingHelper> = ({
   boxCoordinate,
   onResizePointerDownHandler,
   onResizePointerUpHandler,
+  onRotatePointerDownHandler,
 }) => {
   const { x, y, width, height, rotation } = boxCoordinate;
   const centerPoint = getCenterFromLayer(boxCoordinate);
@@ -133,7 +130,7 @@ export const ActionBox: React.FC<IResizingHelper> = ({
           height={HANDLE_WIDTH * 3}
           onPointerDown={(e) => {
             e.stopPropagation();
-            const side = getSideFromPoints(cornerPoints, icon.x, icon.y);
+            onRotatePointerDownHandler?.();
           }}
           onPointerUp={onResizePointerUpHandler}
         />

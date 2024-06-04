@@ -101,7 +101,7 @@ export const MousePresenceSelf = ({
     >
       <MouseIcon />
 
-      <div className="absolute left-5 px-1.5 py-0.5 rounded-md text-sm bg-black text-white font-semibold">
+      <div className="absolute left-5 px-1.5 py-0.5 rounded-md text-sm bg-black text-white font-semibold z-50">
         You - Mode: {canvasModeToString(canvasMode)}
         {canvasMode === ICanvasMode.Resizing && side}
       </div>

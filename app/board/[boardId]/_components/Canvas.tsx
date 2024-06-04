@@ -203,6 +203,22 @@ export const Canvas = ({ boardId }: ICanvas) => {
     [canvasState]
   );
 
+  const updateColorLayer = useMutation(
+    ({ storage }, layerId: string, color: string) => {
+      const liveLayers = storage.get("layers");
+      const selectedLayer = liveLayers.get(layerId);
+
+      if (!selectedLayer) return;
+
+      const [r, g, b] = color.match(/\w\w/g).map((c) => parseInt(c, 16));
+
+      selectedLayer.update({
+        fill: { r, g, b },
+      });
+    },
+    []
+  );
+
   const updateMoveConditionalHandler = useMutation(
     async ({ setMyPresence }, e: React.PointerEvent) => {
       const relativePointCamera: IPoints = deltaPointEventToCamera(e, camera);
@@ -423,6 +439,9 @@ export const Canvas = ({ boardId }: ICanvas) => {
               }}
               onRotatingLayer={(layerId, currentAngle, center) =>
                 onRotationClickHandler(layerId, currentAngle, center)
+              }
+              onColorChange={(layerId, color) =>
+                updateColorLayer(layerId, color)
               }
             />
           )}

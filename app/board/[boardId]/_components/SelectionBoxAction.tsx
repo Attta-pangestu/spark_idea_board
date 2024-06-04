@@ -1,6 +1,7 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
+import { SketchPicker } from "react-color";
 import {
   ICanvasMode,
   ILayerEnum,
@@ -15,7 +16,7 @@ import {
   getCenterFromLayer,
   selectedBoxsCoordinate,
 } from "@/lib/utils";
-import { Move, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { Move, Palette, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { ActionBox } from "@/components/layer/BoxAction";
 
 interface ISelectionBoxMenu {
@@ -32,6 +33,7 @@ interface ISelectionBoxMenu {
     currentAngle: number,
     center: IPoints
   ) => void;
+  onColorChange: (layerId: string, color: string) => void;
 }
 
 export const SelectionBoxAction = memo(
@@ -41,35 +43,35 @@ export const SelectionBoxAction = memo(
     onDeleteLayerHandler,
     onTranlateLayer,
     onRotatingLayer,
+    onColorChange,
   }: ISelectionBoxMenu) => {
+    const [displayColorPicker, setDisplayColorPicker] = useState(false);
+    const [currentColor, setCurrentColor] = useState("#fff");
+
     const selectedLayerIdBySelf: string[] = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection : []
     );
-    // return selected layer id
+
     const layerId = useSelf((me) =>
       me.presence.selection.length > 0 ? me.presence.selection[0] : undefined
     );
 
-    // getting selection coordinate
     const boxCoordinate: XYWH = useStorage((root) => {
-      // check selected layer id
       if (selectedLayerIdBySelf.length === 0)
         return { x: 0, y: 0, width: 0, height: 0, rotation: 0 };
-      // check type of layer not includes path
+
       const selectedLayers: ILayerType[] = selectedLayerIdBySelf.map(
         (layerId) => {
           return root.layers.get(layerId)!;
         }
       );
       const coordinate: XYWH = selectedBoxsCoordinate(selectedLayers);
-
       return coordinate;
     });
 
     if (!boxCoordinate || !layerId) return null;
 
     const centerBoxCoordinate = getCenterFromLayer(boxCoordinate);
-    // const centerRotatePosition = convertNormalToRotationPosition(centerBoxCoordinate.x, centerBoxCoordinate.y)
 
     const IconBox = ({
       children,
@@ -92,7 +94,7 @@ export const SelectionBoxAction = memo(
               centerBoxCoordinate
             );
           }}
-          className=" p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white "
+          className="p-2 rounded-md shadow-sm text-white hover:text-black bg-transparent hover:bg-white border border-white"
         >
           {children}
         </button>
@@ -103,7 +105,7 @@ export const SelectionBoxAction = memo(
       const { width, height, x, y, rotation } = boxCoordinate;
       return (
         <rect
-          className=" fill-transparent stroke-blue-500 stroke-[5px] pointer-events-none"
+          className="fill-transparent stroke-blue-500 stroke-[5px] pointer-events-none"
           x={x}
           y={y}
           width={width}
@@ -120,6 +122,11 @@ export const SelectionBoxAction = memo(
       );
     };
 
+    const handleColorChange = (color: any) => {
+      setCurrentColor(color.hex);
+      onColorChange(layerId, color.hex);
+    };
+
     return (
       <>
         <SelectionBox />
@@ -127,7 +134,13 @@ export const SelectionBoxAction = memo(
           boxCoordinate={boxCoordinate}
           onResizePointerDownHandler={onResizePointerDownHandler}
           onResizePointerUpHandler={onResizePointerUpHandler}
-          onRotatePointerDownHandler={onRotatingLayer}
+          onRotatePointerDownHandler={() =>
+            onRotatingLayer(
+              layerId,
+              boxCoordinate?.rotation ?? 0,
+              centerBoxCoordinate
+            )
+          }
         />
         <Plus
           x={centerBoxCoordinate.x - 18}
@@ -144,19 +157,49 @@ export const SelectionBoxAction = memo(
           height={50}
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
+          className="relative"
         >
-          <div className=" bg-black p-1  rounded-md flex items-center justify-center gap-2">
+          <div className="bg-black p-1 rounded-md flex items-center justify-center gap-2">
             <IconBox onClick={onDeleteLayerHandler}>
-              <Trash2 className="w-6 h-6 cursor-pointer " />{" "}
+              <Trash2 className="w-6 h-6 cursor-pointer" />{" "}
             </IconBox>
             <IconBox onClick={onTranlateLayer}>
-              <Move className="w-6 h-6 cursor-pointer " />{" "}
+              <Move className="w-6 h-6 cursor-pointer" />{" "}
             </IconBox>
             <IconBox onClick={onRotatingLayer}>
-              <RefreshCcw className="w-6 h-6 cursor-pointer " />{" "}
+              <RefreshCcw className="w-6 h-6 cursor-pointer" />{" "}
+            </IconBox>
+            <IconBox onClick={() => setDisplayColorPicker(!displayColorPicker)}>
+              <Palette className="w-6 h-6 cursor-pointer" />{" "}
             </IconBox>
           </div>
         </foreignObject>
+
+        {displayColorPicker ? (
+          <foreignObject
+            x={boxCoordinate.x + boxCoordinate.width / 2 - 100 + 200}
+            y={boxCoordinate.y - 250 - 50}
+            width={200}
+            height={250}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            className="relative cursor-pointer"
+          >
+            <div style={{ position: "absolute", zIndex: 2 }}>
+              <div
+                style={{
+                  position: "fixed",
+                  top: "0px",
+                  right: "0px",
+                  bottom: "0px",
+                  left: "0px",
+                }}
+                onClick={() => setDisplayColorPicker(false)}
+              />
+              <SketchPicker color={currentColor} onChange={handleColorChange} />
+            </div>
+          </foreignObject>
+        ) : null}
       </>
     );
   }
